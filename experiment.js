@@ -18,6 +18,7 @@ class TrustGameExperiment {
         this.totalRounds = 5;
         this.currentRound = 0;
         this.decisionStartTime = 0; // Initialize reaction time tracking
+        this.dataSubmitter = new DataSubmitter(); // Initialize data submitter
         
         this.init();
     }
@@ -216,6 +217,9 @@ class TrustGameExperiment {
             trust_pattern: trustPattern,
             completion_time: new Date().toISOString()
         };
+
+        // Automatically submit data to repository
+        this.submitDataToRepository();
         
         this.container.innerHTML = `
             <h1>Experiment Complete!</h1>
@@ -238,6 +242,9 @@ class TrustGameExperiment {
                 <h3>Thank you for participating!</h3>
                 <p>Your data contributes to research on trust, cooperation, and conflict resolution 
                    at the Center for Conflict and Cooperation.</p>
+                <div id="data-submission-status" class="participant-info">
+                    <p>📤 Submitting your data to repository...</p>
+                </div>
             </div>
             
             <div class="participant-info">
@@ -367,6 +374,50 @@ class TrustGameExperiment {
             .join('\n');
             
         return csvContent;
+    }
+
+    async submitDataToRepository() {
+        try {
+            const result = await this.dataSubmitter.submitData(this.data);
+            const statusElement = document.getElementById('data-submission-status');
+            
+            if (result.success) {
+                statusElement.innerHTML = `
+                    <p>✅ <strong>Data Successfully Saved!</strong></p>
+                    <p>Your data has been automatically saved to the repository's data folder.</p>
+                `;
+                statusElement.className = 'success-message';
+            } else {
+                statusElement.innerHTML = `
+                    <p>⚠️ <strong>Data Saved Locally</strong></p>
+                    <p>Your data has been saved locally. Please copy the CSV data below and submit manually:</p>
+                    <div class="data-copy-area">
+                        <p><strong>Filename:</strong> ${this.dataSubmitter.generateFilename(this.participantId)}</p>
+                        <textarea readonly style="width: 100%; height: 200px; font-family: monospace; font-size: 12px;">${this.convertToCSV()}</textarea>
+                        <button class="btn" onclick="experiment.copyDataToClipboard()">Copy CSV Data</button>
+                    </div>
+                `;
+                statusElement.className = 'warning-message';
+            }
+        } catch (error) {
+            console.error('Error submitting data:', error);
+            const statusElement = document.getElementById('data-submission-status');
+            statusElement.innerHTML = `
+                <p>❌ <strong>Error Saving Data</strong></p>
+                <p>Please download your data manually using the buttons below.</p>
+            `;
+            statusElement.className = 'error-message';
+        }
+    }
+
+    copyDataToClipboard() {
+        const csvData = this.convertToCSV();
+        navigator.clipboard.writeText(csvData).then(() => {
+            alert('CSV data copied to clipboard! You can now paste it into a file.');
+        }).catch(err => {
+            console.error('Failed to copy data:', err);
+            alert('Failed to copy data to clipboard. Please select and copy the text manually.');
+        });
     }
     
     restart() {

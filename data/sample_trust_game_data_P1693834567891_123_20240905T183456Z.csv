@@ -1,0 +1,6 @@
+"participant_id","experiment","version","participant_timestamp","age","gender","field","round","amount_sent","amount_kept","partner_received","amount_returned","final_earnings","return_rate","trial_timestamp","reaction_time","total_earnings","average_amount_sent","trust_pattern","completion_time"
+"P1693834567891_123","trust_game","1.0","2024-09-05T18:34:56.789Z","25","Female","Psychology","1","5","5","25","7","12","0.3","2024-09-05T18:35:23.456Z","2567","58","6","Moderate Trust","2024-09-05T18:38:12.345Z"
+"P1693834567891_123","trust_game","1.0","2024-09-05T18:34:56.789Z","25","Female","Psychology","2","10","0","20","12","12","0.6","2024-09-05T18:36:45.123Z","1789","58","6","Moderate Trust","2024-09-05T18:38:12.345Z"
+"P1693834567891_123","trust_game","1.0","2024-09-05T18:34:56.789Z","25","Female","Psychology","3","0","10","10","1","11","0.1","2024-09-05T18:37:12.789Z","3245","58","6","Moderate Trust","2024-09-05T18:38:12.345Z"
+"P1693834567891_123","trust_game","1.0","2024-09-05T18:34:56.789Z","25","Female","Psychology","4","10","0","20","16","16","0.8","2024-09-05T18:37:34.567Z","1234","58","6","Moderate Trust","2024-09-05T18:38:12.345Z"
+"P1693834567891_123","trust_game","1.0","2024-09-05T18:34:56.789Z","25","Female","Psychology","5","5","5","25","6","11","0.4","2024-09-05T18:38:01.234Z","2876","58","6","Moderate Trust","2024-09-05T18:38:12.345Z"
