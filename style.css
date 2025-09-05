@@ -173,3 +173,44 @@ h2 {
     text-align: center;
     margin: 10px 0;
 }
+
+.success-message {
+    background-color: #d5f4e6;
+    color: #27ae60;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #27ae60;
+    margin: 20px 0;
+}
+
+.warning-message {
+    background-color: #fcf8e3;
+    color: #8a6d3b;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #f0ad4e;
+    margin: 20px 0;
+}
+
+.error-message {
+    background-color: #f2dede;
+    color: #a94442;
+    padding: 15px;
+    border-radius: 5px;
+    border-left: 4px solid #d9534f;
+    margin: 20px 0;
+}
+
+.data-copy-area {
+    margin-top: 15px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.data-copy-area textarea {
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 10px;
+}
