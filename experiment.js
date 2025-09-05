@@ -240,7 +240,8 @@ class TrustGameExperiment {
             </div>
             
             <div class="btn-group">
-                <button class="btn" onclick="experiment.downloadData()">Download My Data</button>
+                <button class="btn" onclick="experiment.downloadData()">Download Data (JSON)</button>
+                <button class="btn" onclick="experiment.downloadDataCSV()">Download Data (CSV)</button>
                 <button class="btn" onclick="experiment.restart()">Restart Experiment</button>
             </div>
         `;
@@ -271,7 +272,7 @@ class TrustGameExperiment {
         // Show success message
         const successMsg = document.createElement('div');
         successMsg.className = 'success';
-        successMsg.textContent = 'Data downloaded successfully!';
+        successMsg.textContent = 'JSON data downloaded successfully!';
         this.container.appendChild(successMsg);
         
         setTimeout(() => {
@@ -279,6 +280,88 @@ class TrustGameExperiment {
                 successMsg.parentNode.removeChild(successMsg);
             }
         }, 3000);
+    }
+
+    downloadDataCSV() {
+        const csvData = this.convertToCSV();
+        const blob = new Blob([csvData], {type: 'text/csv'});
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `trust_game_data_${this.participantId}.csv`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        // Show success message
+        const successMsg = document.createElement('div');
+        successMsg.className = 'success';
+        successMsg.textContent = 'CSV data downloaded successfully!';
+        this.container.appendChild(successMsg);
+        
+        setTimeout(() => {
+            if (successMsg.parentNode) {
+                successMsg.parentNode.removeChild(successMsg);
+            }
+        }, 3000);
+    }
+
+    convertToCSV() {
+        // Define CSV headers
+        const headers = [
+            'participant_id',
+            'experiment',
+            'version', 
+            'participant_timestamp',
+            'age',
+            'gender',
+            'field',
+            'round',
+            'amount_sent',
+            'amount_kept',
+            'partner_received',
+            'amount_returned',
+            'final_earnings',
+            'return_rate',
+            'trial_timestamp',
+            'reaction_time',
+            'total_earnings',
+            'average_amount_sent',
+            'trust_pattern',
+            'completion_time'
+        ];
+        
+        // Create CSV rows - one per trial
+        const rows = this.data.trials.map(trial => [
+            this.data.participant_id,
+            this.data.experiment,
+            this.data.version,
+            this.data.timestamp,
+            this.data.demographics.age || '',
+            this.data.demographics.gender || '',
+            this.data.demographics.field || '',
+            trial.round,
+            trial.amount_sent,
+            trial.amount_kept,
+            trial.partner_received,
+            trial.amount_returned,
+            trial.final_earnings,
+            trial.return_rate,
+            trial.timestamp,
+            trial.reaction_time,
+            this.data.summary.total_earnings || '',
+            this.data.summary.average_amount_sent || '',
+            this.data.summary.trust_pattern || '',
+            this.data.summary.completion_time || ''
+        ]);
+        
+        // Combine headers and rows
+        const csvContent = [headers, ...rows]
+            .map(row => row.map(field => `"${field}"`).join(','))
+            .join('\n');
+            
+        return csvContent;
     }
     
     restart() {
