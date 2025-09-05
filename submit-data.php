@@ -7,12 +7,15 @@
  * 
  * To use this script:
  * 1. Deploy this file to a web server that supports PHP
- * 2. Set the GITHUB_TOKEN environment variable with a personal access token
+ * 2. Set the GH_TOKEN environment variable with a personal access token
  * 3. Update the data-submitter.js to use this proxy endpoint
  * 
  * Required GitHub token permissions:
- * - repo (full control of private repositories)
- * - Contents: write (to create files)
+ * - Contents: Write (to create files in the repository)
+ * - Metadata: Read (basic repository access)
+ * 
+ * For fine-grained tokens: scope to this repository only
+ * For classic tokens: repo (full control of private repositories)
  */
 
 // Set CORS headers to allow requests from GitHub Pages
@@ -34,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 // Check for GitHub token
-$github_token = getenv('GITHUB_TOKEN');
+$github_token = getenv('GH_TOKEN');
 if (!$github_token) {
     http_response_code(500);
     echo json_encode(['error' => 'Server configuration error: GitHub token not found']);

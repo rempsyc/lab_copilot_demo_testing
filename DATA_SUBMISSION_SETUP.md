@@ -16,16 +16,26 @@ By default, the experiment shows "Data Successfully Saved!" but data is only sav
 1. **Add Repository Secret:**
    - Go to your repository Settings → Secrets and variables → Actions
    - Click "New repository secret"
-   - Name: `GITHUB_TOKEN`
-   - Value: A Personal Access Token with `repo` permissions (see below)
+   - Name: `GH_TOKEN`
+   - Value: A Personal Access Token with repository permissions (see below)
 
-2. **Create Personal Access Token:**
+2. **Create Fine-Grained Personal Access Token (Recommended):**
+   - Go to GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens
+   - Click "Generate new token"
+   - Select "Selected repositories" and choose this repository only
+   - Set expiration and select permissions:
+     - ✅ Contents: Write (to create data files)
+     - ✅ Metadata: Read (basic repository access)
+     - ✅ Actions: Write (if using repository dispatch)
+   - Copy the token and use it as the `GH_TOKEN` secret value
+
+   **Alternative - Classic Token:**
    - Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
    - Click "Generate new token (classic)"
    - Set expiration and select scopes:
      - ✅ `repo` (Full control of private repositories)
      - ✅ `workflow` (Update GitHub Action workflows)
-   - Copy the token and use it as the `GITHUB_TOKEN` secret value
+   - Copy the token and use it as the `GH_TOKEN` secret value
 
 **Pros:**
 - ✅ Fully automated
@@ -60,7 +70,7 @@ By default, the experiment shows "Data Successfully Saved!" but data is only sav
 
 **Setup Required:**
 1. Deploy `submit-data.php` to a web server with PHP support
-2. Set `GITHUB_TOKEN` environment variable on the server
+2. Set `GH_TOKEN` environment variable on the server
 3. Update `data-submitter.js` to use the proxy endpoint
 
 **Pros:**
@@ -95,14 +105,16 @@ For most research use cases, we recommend **Option 1 (GitHub Actions)** with **O
 
 ### Quick Setup Steps:
 
-1. **Create a GitHub Personal Access Token:**
+1. **Create a Fine-Grained Personal Access Token:**
    ```
    GitHub Profile → Settings → Developer settings → Personal access tokens
-   → Tokens (classic) → Generate new token (classic)
+   → Fine-grained tokens → Generate new token
    
-   Required scopes:
-   - repo ✅
-   - workflow ✅
+   Repository access: Selected repositories (choose this repo only)
+   Required permissions:
+   - Contents: Write ✅
+   - Metadata: Read ✅
+   - Actions: Write ✅ (for repository dispatch)
    ```
 
 2. **Add Repository Secret:**
@@ -110,7 +122,7 @@ For most research use cases, we recommend **Option 1 (GitHub Actions)** with **O
    Repository → Settings → Secrets and variables → Actions
    → New repository secret
    
-   Name: GITHUB_TOKEN
+   Name: GH_TOKEN
    Value: [your token from step 1]
    ```
 
@@ -141,14 +153,14 @@ If GitHub-based collection doesn't work for your use case, consider these altern
 ## Troubleshooting
 
 ### "Data Saved Locally" Message
-- Check if GitHub token is properly set
-- Verify token has correct permissions
+- Check if GH_TOKEN is properly set in repository secrets
+- Verify token has correct permissions (Contents: Write, Metadata: Read)
 - Check repository Actions tab for errors
 
 ### GitHub Actions Not Triggering
 - Ensure workflow file is in `main` branch
 - Check Actions are enabled in repository settings
-- Verify token has `workflow` permission
+- Verify token has `Actions: Write` permission (fine-grained) or `workflow` scope (classic)
 
 ### CORS Errors (Server-Side Proxy)
 - Update `Access-Control-Allow-Origin` header
