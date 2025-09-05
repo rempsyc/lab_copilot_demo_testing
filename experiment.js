@@ -17,6 +17,7 @@ class TrustGameExperiment {
         this.container = document.getElementById('content');
         this.totalRounds = 5;
         this.currentRound = 0;
+        this.decisionStartTime = 0; // Initialize reaction time tracking
         
         this.init();
     }
@@ -128,6 +129,9 @@ class TrustGameExperiment {
     showTrustDecision() {
         const progress = (this.currentRound - 1) / this.totalRounds * 100;
         
+        // Record the start time for reaction time calculation
+        this.decisionStartTime = Date.now();
+        
         this.container.innerHTML = `
             <h2>Round ${this.currentRound} of ${this.totalRounds}</h2>
             
@@ -152,7 +156,8 @@ class TrustGameExperiment {
     }
     
     makeDecision(amountSent) {
-        const startTime = Date.now();
+        // Calculate reaction time from when the decision screen was shown
+        const reactionTime = Date.now() - this.decisionStartTime;
         
         // Simulate partner response (different personalities for each round)
         const returnRates = [0.3, 0.6, 0.1, 0.8, 0.4]; // Different partner personalities
@@ -169,7 +174,7 @@ class TrustGameExperiment {
             final_earnings: finalEarnings,
             return_rate: returnRates[this.currentRound - 1],
             timestamp: new Date().toISOString(),
-            reaction_time: Date.now() - startTime
+            reaction_time: reactionTime
         };
         
         this.data.trials.push(trialData);
