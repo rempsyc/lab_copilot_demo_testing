@@ -382,21 +382,57 @@ class TrustGameExperiment {
             const statusElement = document.getElementById('data-submission-status');
             
             if (result.success) {
-                statusElement.innerHTML = `
+                let successMessage = `
                     <p>✅ <strong>Data Successfully Saved!</strong></p>
                     <p>Your data has been automatically saved to the repository's data folder.</p>
                 `;
+                
+                if (result.method === 'github_issue') {
+                    successMessage = `
+                        <p>✅ <strong>Data Submitted Successfully!</strong></p>
+                        <p>Your data has been submitted via GitHub issue and will be processed automatically.</p>
+                        ${result.issueUrl ? `<p><a href="${result.issueUrl}" target="_blank">View submission details</a></p>` : ''}
+                    `;
+                } else if (result.method === 'repository_dispatch') {
+                    successMessage = `
+                        <p>✅ <strong>Data Submission Triggered!</strong></p>
+                        <p>Your data is being processed automatically and will be saved to the repository shortly.</p>
+                    `;
+                }
+                
+                statusElement.innerHTML = successMessage;
                 statusElement.className = 'success-message';
+                
             } else {
-                statusElement.innerHTML = `
+                let errorMessage = `
                     <p>⚠️ <strong>Data Saved Locally</strong></p>
-                    <p>Your data has been saved locally. Please copy the CSV data below and submit manually:</p>
+                    <p>${result.message}</p>
+                `;
+                
+                if (result.showManualInstructions) {
+                    errorMessage += `
+                        <div class="manual-submission-instructions">
+                            <h4>Manual Submission Instructions:</h4>
+                            <ol>
+                                <li>Copy the CSV data below</li>
+                                <li>Go to the <a href="https://github.com/rempsyc/lab_copilot_demo_testing/tree/main/data" target="_blank">repository data folder</a></li>
+                                <li>Click "Add file" → "Create new file"</li>
+                                <li>Name the file: <code>${this.dataSubmitter.generateFilename(this.participantId)}</code></li>
+                                <li>Paste the CSV data and commit the file</li>
+                            </ol>
+                        </div>
+                    `;
+                }
+                
+                errorMessage += `
                     <div class="data-copy-area">
                         <p><strong>Filename:</strong> ${this.dataSubmitter.generateFilename(this.participantId)}</p>
                         <textarea readonly style="width: 100%; height: 200px; font-family: monospace; font-size: 12px;">${this.convertToCSV()}</textarea>
                         <button class="btn" onclick="experiment.copyDataToClipboard()">Copy CSV Data</button>
                     </div>
                 `;
+                
+                statusElement.innerHTML = errorMessage;
                 statusElement.className = 'warning-message';
             }
         } catch (error) {
@@ -405,6 +441,11 @@ class TrustGameExperiment {
             statusElement.innerHTML = `
                 <p>❌ <strong>Error Saving Data</strong></p>
                 <p>Please download your data manually using the buttons below.</p>
+                <div class="data-copy-area">
+                    <p><strong>Filename:</strong> ${this.dataSubmitter.generateFilename(this.participantId)}</p>
+                    <textarea readonly style="width: 100%; height: 200px; font-family: monospace; font-size: 12px;">${this.convertToCSV()}</textarea>
+                    <button class="btn" onclick="experiment.copyDataToClipboard()">Copy CSV Data</button>
+                </div>
             `;
             statusElement.className = 'error-message';
         }
