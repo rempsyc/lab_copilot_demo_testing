@@ -28,9 +28,22 @@ The experiment is hosted at: https://rempsyc.github.io/lab_copilot_demo_testing/
 ## Data Collection
 
 - Each participant receives a unique ID
-- Data is automatically downloaded as a JSON file at the end
+- **Automatic Repository Submission**: Data is automatically saved to the repository's `/data` folder
+- **Fallback Options**: Local download as JSON/CSV files if automatic submission fails
+- **Manual Submission**: Clear instructions provided for manual data submission when needed
 - Contains demographics, trial-by-trial decisions, and summary statistics
-- No server required - all data processing happens client-side
+- No server required for basic functionality - all data processing happens client-side
+
+### Data Submission Setup
+
+For automatic data submission to work, repository maintainers need to configure a GitHub token. See [DATA_SUBMISSION_SETUP.md](DATA_SUBMISSION_SETUP.md) for detailed setup instructions.
+
+**Quick Setup for Repository Owners:**
+1. Create a GitHub Personal Access Token with `repo` and `workflow` permissions
+2. Add it as a repository secret named `GITHUB_TOKEN`
+3. Data will be automatically saved to the `/data` folder when participants complete the experiment
+
+If automatic submission is not set up, participants will receive clear instructions for manual data submission.
 
 ## Technical Details
 

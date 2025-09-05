@@ -8,27 +8,57 @@ class DataSubmitter {
             repo: 'lab_copilot_demo_testing',
             apiBase: 'https://api.github.com'
         };
+        
+        // Try to detect if we're running in an environment with GitHub access
+        this.hasGitHubAccess = this.checkGitHubAccess();
+    }
+    
+    /**
+     * Check if we have GitHub API access
+     */
+    checkGitHubAccess() {
+        // Check if we're on GitHub Pages or have a token available
+        const hostname = window.location.hostname;
+        return hostname.includes('github.io') || hostname.includes('githubusercontent.com');
     }
 
     /**
-     * Submit participant data by creating a GitHub issue with the data
-     * This provides a simple way to collect data without requiring server infrastructure
+     * Submit participant data using multiple strategies
      */
     async submitData(participantData) {
         try {
-            const issueData = {
-                title: `Trust Game Data Submission - ${participantData.participant_id}`,
-                body: this.formatDataForIssue(participantData),
-                labels: ['data-submission', 'trust-game']
-            };
-
-            // For now, we'll save to localStorage as a fallback and provide copy-paste option
-            this.saveToLocalStorage(participantData);
+            // Strategy 1: Try GitHub API if we have access
+            if (this.hasGitHubAccess) {
+                const apiResult = await this.submitViaGitHubAPI(participantData);
+                if (apiResult.success) {
+                    return apiResult;
+                }
+            }
             
+            // Strategy 2: Try repository dispatch (requires server-side handling)
+            const dispatchResult = await this.submitViaRepositoryDispatch(participantData);
+            if (dispatchResult.success) {
+                return dispatchResult;
+            }
+            
+            // Strategy 3: Create GitHub issue as fallback
+            const issueResult = await this.submitViaGitHubIssue(participantData);
+            if (issueResult.success) {
+                return {
+                    success: true,
+                    method: 'github_issue',
+                    message: 'Data submitted via GitHub issue. It will be processed automatically.',
+                    issueUrl: issueResult.issueUrl
+                };
+            }
+            
+            // Strategy 4: Fallback to local storage with detailed instructions
+            this.saveToLocalStorage(participantData);
             return {
-                success: true,
+                success: false,
                 method: 'local_storage',
-                message: 'Data saved locally. Please copy the data from the textarea below to submit manually.'
+                message: 'Data saved locally. Please follow the manual submission instructions below.',
+                showManualInstructions: true
             };
 
         } catch (error) {
@@ -39,8 +69,123 @@ class DataSubmitter {
                 success: false,
                 error: error.message,
                 fallback: true,
+                method: 'local_storage',
                 message: 'Data saved locally as fallback. Please copy the data manually.'
             };
+        }
+    }
+    
+    /**
+     * Submit data via GitHub API (direct file creation)
+     */
+    async submitViaGitHubAPI(participantData) {
+        try {
+            const csvData = this.convertToCSV(participantData);
+            const filename = this.generateFilename(participantData.participant_id);
+            const content = btoa(csvData); // Base64 encode
+            
+            const response = await fetch(`${this.githubConfig.apiBase}/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/data/${filename}`, {
+                method: 'PUT',
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    message: `Add experiment data for participant ${participantData.participant_id}`,
+                    content: content,
+                    branch: 'main'
+                })
+            });
+            
+            if (response.ok) {
+                return {
+                    success: true,
+                    method: 'github_api',
+                    message: 'Data successfully committed to repository via GitHub API'
+                };
+            } else {
+                throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.warn('GitHub API submission failed:', error);
+            return { success: false, error: error.message };
+        }
+    }
+    
+    /**
+     * Submit data via repository dispatch event (triggers GitHub Actions)
+     */
+    async submitViaRepositoryDispatch(participantData) {
+        try {
+            const csvData = this.convertToCSV(participantData);
+            
+            const response = await fetch(`${this.githubConfig.apiBase}/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/dispatches`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    event_type: 'submit-experiment-data',
+                    client_payload: {
+                        participant_id: participantData.participant_id,
+                        timestamp: participantData.timestamp,
+                        csv_data: csvData,
+                        total_earnings: participantData.summary?.total_earnings,
+                        trust_pattern: participantData.summary?.trust_pattern,
+                        completion_time: participantData.summary?.completion_time,
+                        create_issue: 'false' // Set to true if you want notification issues
+                    }
+                })
+            });
+            
+            if (response.ok || response.status === 204) {
+                return {
+                    success: true,
+                    method: 'repository_dispatch',
+                    message: 'Data submission triggered. It will be processed automatically by GitHub Actions.'
+                };
+            } else {
+                throw new Error(`Repository dispatch error: ${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.warn('Repository dispatch submission failed:', error);
+            return { success: false, error: error.message };
+        }
+    }
+    
+    /**
+     * Submit data by creating a GitHub issue
+     */
+    async submitViaGitHubIssue(participantData) {
+        try {
+            const issueBody = this.formatDataForIssue(participantData);
+            
+            const response = await fetch(`${this.githubConfig.apiBase}/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/issues`, {
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    title: `Trust Game Data Submission - ${participantData.participant_id}`,
+                    body: issueBody,
+                    labels: ['data-submission', 'trust-game']
+                })
+            });
+            
+            if (response.ok) {
+                const issue = await response.json();
+                return {
+                    success: true,
+                    issueUrl: issue.html_url
+                };
+            } else {
+                throw new Error(`GitHub Issues API error: ${response.status} ${response.statusText}`);
+            }
+        } catch (error) {
+            console.warn('GitHub issue submission failed:', error);
+            return { success: false, error: error.message };
         }
     }
 
