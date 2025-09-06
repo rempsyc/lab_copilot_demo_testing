@@ -59,8 +59,7 @@ class DataSubmitter {
                 success: false,
                 method: 'local_storage',
                 message: 'OSF DataPipe unavailable. Your data has been saved locally for download.',
-                showDownloadButton: true,
-                showOSFInstructions: true // Show OSF manual submission option
+                showDownloadButton: true
             };
 
         } catch (error) {
@@ -73,8 +72,7 @@ class DataSubmitter {
                 fallback: true,
                 method: 'local_storage',
                 message: 'Data saved locally as fallback. Please download the CSV file.',
-                showDownloadButton: true,
-                showOSFInstructions: true
+                showDownloadButton: true
             };
         }
     }
