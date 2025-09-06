@@ -217,8 +217,8 @@ h2 {
 
 .manual-submission-instructions {
     background-color: #fff3cd;
-    padding: 15px;
-    border-radius: 5px;
+    padding: 20px;
+    border-radius: 8px;
     border-left: 4px solid #ffc107;
     margin: 15px 0;
 }
@@ -226,7 +226,85 @@ h2 {
 .manual-submission-instructions h4 {
     color: #856404;
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.submission-steps {
+    margin: 0;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    margin: 15px 0;
+    padding: 12px;
+    background-color: #fffbf0;
+    border-radius: 6px;
+    border: 1px solid #ffd60a;
+}
+
+.step-number {
+    background-color: #ffc107;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.step-content {
+    flex: 1;
+    color: #856404;
+}
+
+.step-content strong {
+    display: block;
+    margin-bottom: 4px;
+    color: #664d03;
+}
+
+.step-content small {
+    color: #6f5c00;
+    font-style: italic;
+}
+
+.filename {
+    background-color: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: #d63384;
+    border: 1px solid #dee2e6;
+    cursor: pointer;
+    display: inline-block;
+    margin: 4px 0;
+}
+
+.filename:hover {
+    background-color: #e9ecef;
+}
+
+.btn-sm {
+    padding: 4px 8px;
+    font-size: 12px;
+    border-radius: 4px;
+    display: inline-block;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    background-color: #007bff;
+    color: white;
+}
+
+.btn-sm:hover {
+    background-color: #0056b3;
 }
 
 .manual-submission-instructions ol {

@@ -410,16 +410,48 @@ class TrustGameExperiment {
                 `;
                 
                 if (result.showManualInstructions) {
+                    const filename = this.dataSubmitter.generateFilename(this.participantId);
                     errorMessage += `
                         <div class="manual-submission-instructions">
-                            <h4>Manual Submission Instructions:</h4>
-                            <ol>
-                                <li>Copy the CSV data below</li>
-                                <li>Go to the <a href="https://github.com/rempsyc/lab_copilot_demo_testing/tree/main/data" target="_blank">repository data folder</a></li>
-                                <li>Click "Add file" → "Create new file"</li>
-                                <li>Name the file: <code>${this.dataSubmitter.generateFilename(this.participantId)}</code></li>
-                                <li>Paste the CSV data and commit the file</li>
-                            </ol>
+                            <h4>📤 Easy Manual Submission:</h4>
+                            <div class="submission-steps">
+                                <div class="step">
+                                    <span class="step-number">1</span>
+                                    <div class="step-content">
+                                        <strong>Copy the data below</strong>
+                                        <button class="btn btn-sm" onclick="experiment.copyDataToClipboard()" style="margin-left: 10px;">📋 Copy CSV Data</button>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="step-number">2</span>
+                                    <div class="step-content">
+                                        <strong>Open the data folder</strong>
+                                        <a href="https://github.com/rempsyc/lab_copilot_demo_testing/tree/main/data" target="_blank" class="btn btn-sm" style="margin-left: 10px;">🗂️ Open Data Folder</a>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="step-number">3</span>
+                                    <div class="step-content">
+                                        <strong>Create new file</strong><br>
+                                        <small>Click "Add file" → "Create new file"</small>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="step-number">4</span>
+                                    <div class="step-content">
+                                        <strong>Use this filename:</strong><br>
+                                        <code class="filename" onclick="experiment.copyFilename()">${filename}</code>
+                                        <button class="btn btn-sm" onclick="experiment.copyFilename()" style="margin-left: 10px;">📋 Copy Filename</button>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="step-number">5</span>
+                                    <div class="step-content">
+                                        <strong>Paste data and commit</strong><br>
+                                        <small>Paste the CSV data, then click "Commit new file"</small>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     `;
                 }
@@ -454,11 +486,45 @@ class TrustGameExperiment {
     copyDataToClipboard() {
         const csvData = this.convertToCSV();
         navigator.clipboard.writeText(csvData).then(() => {
-            alert('CSV data copied to clipboard! You can now paste it into a file.');
+            this.showToast('✅ CSV data copied to clipboard!');
         }).catch(err => {
             console.error('Failed to copy data:', err);
             alert('Failed to copy data to clipboard. Please select and copy the text manually.');
         });
+    }
+
+    copyFilename() {
+        const filename = this.dataSubmitter.generateFilename(this.participantId);
+        navigator.clipboard.writeText(filename).then(() => {
+            this.showToast('✅ Filename copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy filename:', err);
+            alert('Failed to copy filename to clipboard. Please copy it manually.');
+        });
+    }
+
+    showToast(message) {
+        // Simple toast notification
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 4px;
+            z-index: 1000;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 3000);
     }
     
     restart() {
