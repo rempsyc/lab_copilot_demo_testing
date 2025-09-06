@@ -9,8 +9,27 @@ class DataSubmitter {
             apiBase: 'https://api.github.com'
         };
         
+        // Initialize OSF DataPipe integration
+        this.osfDataPipe = new OSFDataPipe();
+        this.configureOSFDataPipe();
+        
         // Try to detect if we're running in an environment with GitHub access
         this.hasGitHubAccess = this.checkGitHubAccess();
+    }
+
+    /**
+     * Configure OSF DataPipe with study settings
+     */
+    configureOSFDataPipe() {
+        try {
+            this.osfDataPipe.configure({
+                experimentId: 'trust_game_ccc_2024', // Unique identifier for this study
+                studyId: 'center_conflict_cooperation', // Research group identifier
+                sessionId: null // Will be auto-generated per participant
+            });
+        } catch (error) {
+            console.warn('Failed to configure OSF DataPipe:', error);
+        }
     }
     
     /**
@@ -27,13 +46,19 @@ class DataSubmitter {
      */
     async submitData(participantData) {
         try {
-            // Strategy 1: Try server-side proxy (submit-data.php)
+            // Strategy 1: Try OSF DataPipe (recommended for research)
+            const osfResult = await this.submitViaOSFDataPipe(participantData);
+            if (osfResult.success) {
+                return osfResult;
+            }
+            
+            // Strategy 2: Try server-side proxy (submit-data.php/Netlify)
             const proxyResult = await this.submitViaProxy(participantData);
             if (proxyResult.success) {
                 return proxyResult;
             }
             
-            // Strategy 2: Try GitHub hosted solution (if available)
+            // Strategy 3: Try GitHub hosted solution (if available) 
             const hostedResult = await this.submitViaHostedEndpoint(participantData);
             if (hostedResult.success) {
                 return hostedResult;
@@ -45,7 +70,8 @@ class DataSubmitter {
                 success: false,
                 method: 'local_storage',
                 message: 'Data saved locally. Please follow the manual submission instructions below.',
-                showManualInstructions: true
+                showManualInstructions: true,
+                showOSFInstructions: true // Show OSF backup option
             };
 
         } catch (error) {
@@ -57,8 +83,37 @@ class DataSubmitter {
                 error: error.message,
                 fallback: true,
                 method: 'local_storage',
-                message: 'Data saved locally as fallback. Please copy the data manually.'
+                message: 'Data saved locally as fallback. Please copy the data manually.',
+                showOSFInstructions: true
             };
+        }
+    }
+
+    /**
+     * Submit data via OSF DataPipe (recommended method)
+     */
+    async submitViaOSFDataPipe(participantData) {
+        try {
+            console.log('Attempting data submission via OSF DataPipe...');
+            
+            const result = await this.osfDataPipe.submitData(participantData);
+            
+            if (result.success) {
+                return {
+                    success: true,
+                    method: 'osf_datapipe',
+                    message: 'Data successfully submitted to OSF DataPipe! Your data has been securely saved to the Open Science Framework.',
+                    sessionId: result.sessionId,
+                    experimentId: result.experimentId,
+                    details: result.details
+                };
+            } else {
+                console.warn('OSF DataPipe submission failed:', result.error);
+                return { success: false, error: result.error || 'OSF DataPipe submission failed' };
+            }
+        } catch (error) {
+            console.warn('OSF DataPipe submission error:', error);
+            return { success: false, error: error.message };
         }
     }
     

@@ -57,7 +57,7 @@ jobs:
             repo: context.repo.repo,
             title: `Experiment Data Submitted - ${{ github.event.client_payload.participant_id }}`,
             body: `## Trust Game Data Submission Completed
-            
+
 **Participant ID:** ${{ github.event.client_payload.participant_id }}
 **Timestamp:** ${{ github.event.client_payload.timestamp }}
 **Data File:** \`data/trust_game_data_${{ github.event.client_payload.participant_id }}_*.csv\`
