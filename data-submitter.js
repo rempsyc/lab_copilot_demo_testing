@@ -27,32 +27,19 @@ class DataSubmitter {
      */
     async submitData(participantData) {
         try {
-            // Strategy 1: Try GitHub API if we have access
-            if (this.hasGitHubAccess) {
-                const apiResult = await this.submitViaGitHubAPI(participantData);
-                if (apiResult.success) {
-                    return apiResult;
-                }
+            // Strategy 1: Try server-side proxy (submit-data.php)
+            const proxyResult = await this.submitViaProxy(participantData);
+            if (proxyResult.success) {
+                return proxyResult;
             }
             
-            // Strategy 2: Try repository dispatch (requires server-side handling)
-            const dispatchResult = await this.submitViaRepositoryDispatch(participantData);
-            if (dispatchResult.success) {
-                return dispatchResult;
+            // Strategy 2: Try GitHub hosted solution (if available)
+            const hostedResult = await this.submitViaHostedEndpoint(participantData);
+            if (hostedResult.success) {
+                return hostedResult;
             }
             
-            // Strategy 3: Create GitHub issue as fallback
-            const issueResult = await this.submitViaGitHubIssue(participantData);
-            if (issueResult.success) {
-                return {
-                    success: true,
-                    method: 'github_issue',
-                    message: 'Data submitted via GitHub issue. It will be processed automatically.',
-                    issueUrl: issueResult.issueUrl
-                };
-            }
-            
-            // Strategy 4: Fallback to local storage with detailed instructions
+            // Fallback: Save locally with clear manual instructions
             this.saveToLocalStorage(participantData);
             return {
                 success: false,
@@ -77,141 +64,146 @@ class DataSubmitter {
     
     /**
      * Submit data via GitHub API (direct file creation)
+     * Note: This method cannot work from client-side without authentication
      */
     async submitViaGitHubAPI(participantData) {
-        try {
-            const csvData = this.convertToCSV(participantData);
-            const filename = this.generateFilename(participantData.participant_id);
-            const content = btoa(csvData); // Base64 encode
-            
-            const response = await fetch(`${this.githubConfig.apiBase}/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/contents/data/${filename}`, {
-                method: 'PUT',
-                headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    message: `Add experiment data for participant ${participantData.participant_id}`,
-                    content: content,
-                    branch: 'main'
-                })
-            });
-            
-            if (response.ok) {
-                return {
-                    success: true,
-                    method: 'github_api',
-                    message: 'Data successfully committed to repository via GitHub API'
-                };
-            } else {
-                throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
-            }
-        } catch (error) {
-            console.warn('GitHub API submission failed:', error);
-            return { success: false, error: error.message };
-        }
+        console.warn('GitHub API submission skipped: Client-side authentication not possible');
+        return { 
+            success: false, 
+            error: 'GitHub API requires authentication not available in client-side code' 
+        };
     }
     
     /**
      * Submit data via repository dispatch event (triggers GitHub Actions)
+     * Note: This method cannot work from client-side without authentication
      */
     async submitViaRepositoryDispatch(participantData) {
+        console.warn('Repository dispatch submission skipped: Client-side authentication not possible');
+        return { 
+            success: false, 
+            error: 'Repository dispatch requires authentication not available in client-side code' 
+        };
+    }
+    
+    /**
+     * Submit data via server-side proxy (PHP script or serverless function)
+     */
+    async submitViaProxy(participantData) {
         try {
             const csvData = this.convertToCSV(participantData);
             
-            const response = await fetch(`${this.githubConfig.apiBase}/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/dispatches`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    event_type: 'submit-experiment-data',
-                    client_payload: {
-                        participant_id: participantData.participant_id,
-                        timestamp: participantData.timestamp,
-                        csv_data: csvData,
-                        total_earnings: participantData.summary?.total_earnings,
-                        trust_pattern: participantData.summary?.trust_pattern,
-                        completion_time: participantData.summary?.completion_time,
-                        create_issue: 'false' // Set to true if you want notification issues
-                    }
-                })
-            });
+            // Try different possible proxy URLs
+            const proxyUrls = [
+                '/.netlify/functions/submit-data', // Netlify function
+                '/api/submit-data', // Vercel function
+                'submit-data.php', // PHP script (same domain)
+                './submit-data.php', // Relative path
+                '/submit-data.php' // Root path
+            ];
             
-            if (response.ok || response.status === 204) {
-                return {
-                    success: true,
-                    method: 'repository_dispatch',
-                    message: 'Data submission triggered. It will be processed automatically by GitHub Actions.'
-                };
-            } else {
-                throw new Error(`Repository dispatch error: ${response.status} ${response.statusText}`);
+            for (const proxyUrl of proxyUrls) {
+                try {
+                    console.log(`Attempting data submission via: ${proxyUrl}`);
+                    
+                    const response = await fetch(proxyUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            participant_id: participantData.participant_id,
+                            csv_data: csvData,
+                            timestamp: participantData.timestamp
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        if (result.success) {
+                            return {
+                                success: true,
+                                method: 'server_proxy',
+                                message: 'Data successfully submitted to GitHub repository via server proxy!',
+                                details: result,
+                                filename: result.filename
+                            };
+                        }
+                    } else {
+                        console.warn(`Proxy ${proxyUrl} returned ${response.status}: ${response.statusText}`);
+                    }
+                } catch (proxyError) {
+                    console.warn(`Proxy attempt failed for ${proxyUrl}:`, proxyError.message);
+                    continue; // Try next URL
+                }
             }
+            
+            throw new Error('All proxy endpoints failed or are not available');
         } catch (error) {
-            console.warn('Repository dispatch submission failed:', error);
+            console.warn('Server proxy submission failed:', error);
             return { success: false, error: error.message };
         }
     }
     
     /**
-     * Submit data by creating a GitHub issue
+     * Submit data via GitHub Pages hosted endpoint (using GitHub Actions)
      */
-    async submitViaGitHubIssue(participantData) {
-        try {
-            const issueBody = this.formatDataForIssue(participantData);
-            
-            const response = await fetch(`${this.githubConfig.apiBase}/repos/${this.githubConfig.owner}/${this.githubConfig.repo}/issues`, {
-                method: 'POST',
-                headers: {
-                    'Accept': 'application/vnd.github.v3+json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    title: `Trust Game Data Submission - ${participantData.participant_id}`,
-                    body: issueBody,
-                    labels: ['data-submission', 'trust-game']
-                })
-            });
-            
-            if (response.ok) {
-                const issue = await response.json();
-                return {
-                    success: true,
-                    issueUrl: issue.html_url
-                };
-            } else {
-                throw new Error(`GitHub Issues API error: ${response.status} ${response.statusText}`);
-            }
-        } catch (error) {
-            console.warn('GitHub issue submission failed:', error);
-            return { success: false, error: error.message };
-        }
+    async submitViaHostedEndpoint(participantData) {
+        // For now, this method is not implemented as GitHub's public APIs
+        // require authentication for most operations
+        console.warn('Hosted endpoint submission not implemented: Requires authenticated endpoints');
+        return { 
+            success: false, 
+            error: 'Hosted endpoint not available - authentication required' 
+        };
+    }
+
+    /**
+     * Format participant data for public GitHub issue submission
+     */
+    formatDataForPublicIssue(data) {
+        const csvData = this.convertToCSV(data);
+        
+        return `## 🔬 Trust Game Experiment Data Submission
+
+**Participant ID:** \`${data.participant_id}\`  
+**Timestamp:** ${data.timestamp}  
+**Completion Time:** ${data.summary.completion_time || 'N/A'}  
+
+### 📊 Summary Statistics
+- **Total Earnings:** $${data.summary.total_earnings || 0}
+- **Average Amount Sent:** $${(data.summary.average_amount_sent || 0).toFixed(2)}
+- **Trust Pattern:** ${data.summary.trust_pattern || 'N/A'}
+
+### 📋 Experiment Data
+
+<details>
+<summary>Click to view CSV data</summary>
+
+\`\`\`csv
+${csvData}
+\`\`\`
+
+</details>
+
+### 🤖 Processing Instructions
+This issue was automatically created by the Trust Game experiment. The CSV data above should be saved to the \`/data\` folder using the filename: \`trust_game_data_${data.participant_id}_${new Date().toISOString().replace(/[:.]/g, '').replace('T', '_').slice(0, -1)}.csv\`
+
+To process this data:
+1. Copy the CSV data from the code block above
+2. Create a new file in the \`/data\` folder with the specified filename
+3. Paste the CSV data and commit the file
+4. Close this issue
+
+---
+*Automated submission from Trust Game experiment v${data.version}*`;
     }
 
     /**
      * Format participant data for GitHub issue submission
      */
     formatDataForIssue(data) {
-        const csvData = this.convertToCSV(data);
-        
-        return `## Trust Game Experiment Data Submission
-
-**Participant ID:** ${data.participant_id}
-**Timestamp:** ${data.timestamp}
-**Completion Time:** ${data.summary.completion_time || 'N/A'}
-
-### Summary Statistics
-- **Total Earnings:** $${data.summary.total_earnings || 0}
-- **Average Amount Sent:** $${(data.summary.average_amount_sent || 0).toFixed(2)}
-- **Trust Pattern:** ${data.summary.trust_pattern || 'N/A'}
-
-### CSV Data
-\`\`\`csv
-${csvData}
-\`\`\`
-
-*This issue was automatically created by the Trust Game experiment. The CSV data above should be saved to the /data folder.*`;
+        return this.formatDataForPublicIssue(data);
     }
 
     /**
