@@ -6,7 +6,7 @@ class OSFDataPipe {
         this.dataPipeUrl = 'https://pipe.jspsych.org/api/data/';
         this.isConfigured = false;
         this.configuration = {
-            experimentId: null,
+            experimentId: xMeT3pzdPmF9,
             sessionId: null,
             studyId: null
         };
