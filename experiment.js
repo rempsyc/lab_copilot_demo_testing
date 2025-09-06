@@ -82,11 +82,11 @@ class TrustGameExperiment {
     showDemographics() {
         this.container.innerHTML = `
             <h2>Background Information</h2>
-            <p>Please provide some basic information about yourself:</p>
+            <p>Please provide some basic information about yourself (all fields optional):</p>
             
             <div class="form-group">
-                <label for="age">What is your age?</label>
-                <input type="number" id="age" min="18" max="100" required>
+                <label for="age">What is your age? (optional)</label>
+                <input type="number" id="age" min="18" max="100">
             </div>
             
             <div class="form-group">
@@ -99,8 +99,6 @@ class TrustGameExperiment {
                 <input type="text" id="field">
             </div>
             
-            <div id="error-msg" class="error hidden">Please enter your age to continue.</div>
-            
             <div class="btn-group">
                 <button class="btn" onclick="experiment.saveDemographics()">Start Experiment</button>
             </div>
@@ -112,13 +110,8 @@ class TrustGameExperiment {
         const gender = document.getElementById('gender').value;
         const field = document.getElementById('field').value;
         
-        if (!age || age < 18) {
-            document.getElementById('error-msg').classList.remove('hidden');
-            return;
-        }
-        
         this.data.demographics = {
-            age: parseInt(age),
+            age: age ? parseInt(age) : null,
             gender: gender || 'Not specified',
             field: field || 'Not specified'
         };
@@ -420,87 +413,14 @@ class TrustGameExperiment {
             } else {
                 let errorMessage = `
                     <p>⚠️ <strong>Data Saved Locally</strong></p>
-                    <p>${result.message}</p>
+                    <p>OSF DataPipe unavailable. Your data has been saved locally for download.</p>
                 `;
                 
-                if (result.showOSFInstructions) {
-                    errorMessage += `
-                        <div class="osf-backup-instructions">
-                            <h4>🔬 Alternative: Submit to OSF Manually</h4>
-                            <div class="submission-steps">
-                                <div class="step">
-                                    <span class="step-number">1</span>
-                                    <div class="step-content">
-                                        <strong>Go to OSF DataPipe</strong>
-                                        <a href="https://pipe.jspsych.org/" target="_blank" class="btn btn-sm" style="margin-left: 10px;">🔗 Open DataPipe</a>
-                                    </div>
-                                </div>
-                                <div class="step">
-                                    <span class="step-number">2</span>
-                                    <div class="step-content">
-                                        <strong>Use Experiment ID:</strong> <code>trust_game_ccc_2024</code>
-                                        <button class="btn btn-sm" onclick="experiment.copyToClipboard('trust_game_ccc_2024')" style="margin-left: 10px;">📋 Copy</button>
-                                    </div>
-                                </div>
-                                <div class="step">
-                                    <span class="step-number">3</span>
-                                    <div class="step-content">
-                                        <strong>Upload your data</strong>
-                                        <button class="btn btn-sm" onclick="experiment.copyOSFData()" style="margin-left: 10px;">📋 Copy OSF Data</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-                
-                if (result.showDownloadButton) {
-                    errorMessage += `
-                        <div class="download-section">
-                            <h4>📥 Download Your Data:</h4>
-                            <p>Click the button below to download your experiment data as a CSV file:</p>
-                            <button class="btn btn-primary" onclick="experiment.downloadCSV()" style="margin: 10px;">📄 Download CSV File</button>
-                            <button class="btn btn-secondary" onclick="experiment.copyDataToClipboard()" style="margin: 10px;">📋 Copy CSV Data</button>
-                        </div>
-                    `;
-                }
-                
-                if (result.showOSFInstructions) {
-                    errorMessage += `
-                        <div class="osf-submission-instructions">
-                            <h4>🔬 OSF DataPipe Manual Submission:</h4>
-                            <div class="submission-steps">
-                                <div class="step">
-                                    <span class="step-number">1</span>
-                                    <div class="step-content">
-                                        <strong>Visit OSF DataPipe</strong>
-                                        <a href="https://pipe.jspsych.org" target="_blank" class="btn btn-sm" style="margin-left: 10px;">🌐 Open DataPipe</a>
-                                    </div>
-                                </div>
-                                <div class="step">
-                                    <span class="step-number">2</span>
-                                    <div class="step-content">
-                                        <strong>Enter Experiment ID:</strong> <code>trust_game_ccc_2024</code>
-                                        <button class="btn btn-sm" onclick="experiment.copyText('trust_game_ccc_2024')" style="margin-left: 10px;">📋 Copy ID</button>
-                                    </div>
-                                </div>
-                                <div class="step">
-                                    <span class="step-number">3</span>
-                                    <div class="step-content">
-                                        <strong>Upload your data</strong><br>
-                                        <small>Use the CSV data below or the JSON format for DataPipe</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                }
-                
                 errorMessage += `
-                    <div class="data-copy-area">
-                        <p><strong>CSV Data:</strong></p>
-                        <textarea readonly style="width: 100%; height: 200px; font-family: monospace; font-size: 12px;">${this.convertToCSV()}</textarea>
-                        <button class="btn" onclick="experiment.copyDataToClipboard()">Copy CSV Data</button>
+                    <div class="download-section">
+                        <h4>📥 Download Your Data:</h4>
+                        <p>Click the button below to download your experiment data as a CSV file:</p>
+                        <button class="btn btn-primary" onclick="experiment.downloadDataCSV()" style="margin: 10px; padding: 12px 24px; font-size: 16px;">📄 Download CSV File</button>
                     </div>
                 `;
                 
@@ -512,11 +432,10 @@ class TrustGameExperiment {
             const statusElement = document.getElementById('data-submission-status');
             statusElement.innerHTML = `
                 <p>❌ <strong>Error Saving Data</strong></p>
-                <p>Please download your data manually using the buttons below.</p>
-                <div class="data-copy-area">
-                    <p><strong>Filename:</strong> ${this.dataSubmitter.generateFilename(this.participantId)}</p>
-                    <textarea readonly style="width: 100%; height: 200px; font-family: monospace; font-size: 12px;">${this.convertToCSV()}</textarea>
-                    <button class="btn" onclick="experiment.copyDataToClipboard()">Copy CSV Data</button>
+                <p>Please download your data manually using the button below.</p>
+                <div class="download-section">
+                    <h4>📥 Download Your Data:</h4>
+                    <button class="btn btn-primary" onclick="experiment.downloadDataCSV()" style="margin: 10px; padding: 12px 24px; font-size: 16px;">📄 Download CSV File</button>
                 </div>
             `;
             statusElement.className = 'error-message';
