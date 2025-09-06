@@ -454,46 +454,41 @@ class TrustGameExperiment {
                     `;
                 }
                 
-                if (result.showManualInstructions) {
-                    const filename = this.dataSubmitter.generateFilename(this.participantId);
+                if (result.showDownloadButton) {
                     errorMessage += `
-                        <div class="manual-submission-instructions">
-                            <h4>📤 GitHub Manual Submission:</h4>
+                        <div class="download-section">
+                            <h4>📥 Download Your Data:</h4>
+                            <p>Click the button below to download your experiment data as a CSV file:</p>
+                            <button class="btn btn-primary" onclick="experiment.downloadCSV()" style="margin: 10px;">📄 Download CSV File</button>
+                            <button class="btn btn-secondary" onclick="experiment.copyDataToClipboard()" style="margin: 10px;">📋 Copy CSV Data</button>
+                        </div>
+                    `;
+                }
+                
+                if (result.showOSFInstructions) {
+                    errorMessage += `
+                        <div class="osf-submission-instructions">
+                            <h4>🔬 OSF DataPipe Manual Submission:</h4>
                             <div class="submission-steps">
                                 <div class="step">
                                     <span class="step-number">1</span>
                                     <div class="step-content">
-                                        <strong>Copy the data below</strong>
-                                        <button class="btn btn-sm" onclick="experiment.copyDataToClipboard()" style="margin-left: 10px;">📋 Copy CSV Data</button>
+                                        <strong>Visit OSF DataPipe</strong>
+                                        <a href="https://pipe.jspsych.org" target="_blank" class="btn btn-sm" style="margin-left: 10px;">🌐 Open DataPipe</a>
                                     </div>
                                 </div>
                                 <div class="step">
                                     <span class="step-number">2</span>
                                     <div class="step-content">
-                                        <strong>Open the data folder</strong>
-                                        <a href="https://github.com/rempsyc/lab_copilot_demo_testing/tree/main/data" target="_blank" class="btn btn-sm" style="margin-left: 10px;">🗂️ Open Data Folder</a>
+                                        <strong>Enter Experiment ID:</strong> <code>trust_game_ccc_2024</code>
+                                        <button class="btn btn-sm" onclick="experiment.copyText('trust_game_ccc_2024')" style="margin-left: 10px;">📋 Copy ID</button>
                                     </div>
                                 </div>
                                 <div class="step">
                                     <span class="step-number">3</span>
                                     <div class="step-content">
-                                        <strong>Create new file</strong><br>
-                                        <small>Click "Add file" → "Create new file"</small>
-                                    </div>
-                                </div>
-                                <div class="step">
-                                    <span class="step-number">4</span>
-                                    <div class="step-content">
-                                        <strong>Use this filename:</strong><br>
-                                        <code class="filename" onclick="experiment.copyFilename()">${filename}</code>
-                                        <button class="btn btn-sm" onclick="experiment.copyFilename()" style="margin-left: 10px;">📋 Copy Filename</button>
-                                    </div>
-                                </div>
-                                <div class="step">
-                                    <span class="step-number">5</span>
-                                    <div class="step-content">
-                                        <strong>Paste data and commit</strong><br>
-                                        <small>Paste the CSV data, then click "Commit new file"</small>
+                                        <strong>Upload your data</strong><br>
+                                        <small>Use the CSV data below or the JSON format for DataPipe</small>
                                     </div>
                                 </div>
                             </div>
@@ -596,6 +591,40 @@ class TrustGameExperiment {
         }).catch(err => {
             console.error('Failed to copy filename:', err);
             alert('Failed to copy filename to clipboard. Please copy it manually.');
+        });
+    }
+
+    downloadCSV() {
+        const csvData = this.convertToCSV();
+        const filename = this.dataSubmitter.generateFilename(this.participantId);
+        
+        // Create a blob with the CSV data
+        const blob = new Blob([csvData], { type: 'text/csv;charset=utf-8;' });
+        
+        // Create a download link
+        const link = document.createElement('a');
+        if (link.download !== undefined) {
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            this.showToast('✅ CSV file downloaded!');
+        } else {
+            // Fallback for browsers that don't support download attribute
+            alert('Download not supported. Please copy the CSV data manually.');
+        }
+    }
+
+    copyText(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            this.showToast('✅ Copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy text:', err);
+            alert('Failed to copy to clipboard. Please copy manually: ' + text);
         });
     }
 

@@ -42,36 +42,25 @@ class DataSubmitter {
     }
 
     /**
-     * Submit participant data using multiple strategies
+     * Submit participant data using OSF DataPipe (primary method)
+     * Falls back to CSV download only if OSF DataPipe fails
      */
     async submitData(participantData) {
         try {
-            // Strategy 1: Try OSF DataPipe (recommended for research)
+            // Primary strategy: Try OSF DataPipe (recommended for research)
             const osfResult = await this.submitViaOSFDataPipe(participantData);
             if (osfResult.success) {
                 return osfResult;
             }
             
-            // Strategy 2: Try server-side proxy (submit-data.php/Netlify)
-            const proxyResult = await this.submitViaProxy(participantData);
-            if (proxyResult.success) {
-                return proxyResult;
-            }
-            
-            // Strategy 3: Try GitHub hosted solution (if available) 
-            const hostedResult = await this.submitViaHostedEndpoint(participantData);
-            if (hostedResult.success) {
-                return hostedResult;
-            }
-            
-            // Fallback: Save locally with clear manual instructions
+            // Fallback: Save locally with CSV download option
             this.saveToLocalStorage(participantData);
             return {
                 success: false,
                 method: 'local_storage',
-                message: 'Data saved locally. Please follow the manual submission instructions below.',
-                showManualInstructions: true,
-                showOSFInstructions: true // Show OSF backup option
+                message: 'OSF DataPipe unavailable. Your data has been saved locally for download.',
+                showDownloadButton: true,
+                showOSFInstructions: true // Show OSF manual submission option
             };
 
         } catch (error) {
@@ -83,14 +72,15 @@ class DataSubmitter {
                 error: error.message,
                 fallback: true,
                 method: 'local_storage',
-                message: 'Data saved locally as fallback. Please copy the data manually.',
+                message: 'Data saved locally as fallback. Please download the CSV file.',
+                showDownloadButton: true,
                 showOSFInstructions: true
             };
         }
     }
 
     /**
-     * Submit data via OSF DataPipe (recommended method)
+     * Submit data via OSF DataPipe (primary and recommended method)
      */
     async submitViaOSFDataPipe(participantData) {
         try {
@@ -118,147 +108,16 @@ class DataSubmitter {
     }
     
     /**
-     * Submit data via GitHub API (direct file creation)
-     * Note: This method cannot work from client-side without authentication
+     * Create manual submission instructions for OSF DataPipe
      */
-    async submitViaGitHubAPI(participantData) {
-        console.warn('GitHub API submission skipped: Client-side authentication not possible');
-        return { 
-            success: false, 
-            error: 'GitHub API requires authentication not available in client-side code' 
-        };
-    }
-    
-    /**
-     * Submit data via repository dispatch event (triggers GitHub Actions)
-     * Note: This method cannot work from client-side without authentication
-     */
-    async submitViaRepositoryDispatch(participantData) {
-        console.warn('Repository dispatch submission skipped: Client-side authentication not possible');
-        return { 
-            success: false, 
-            error: 'Repository dispatch requires authentication not available in client-side code' 
-        };
-    }
-    
-    /**
-     * Submit data via server-side proxy (PHP script or serverless function)
-     */
-    async submitViaProxy(participantData) {
-        try {
-            const csvData = this.convertToCSV(participantData);
-            
-            // Try different possible proxy URLs
-            const proxyUrls = [
-                '/.netlify/functions/submit-data', // Netlify function
-                '/api/submit-data', // Vercel function
-                'submit-data.php', // PHP script (same domain)
-                './submit-data.php', // Relative path
-                '/submit-data.php' // Root path
-            ];
-            
-            for (const proxyUrl of proxyUrls) {
-                try {
-                    console.log(`Attempting data submission via: ${proxyUrl}`);
-                    
-                    const response = await fetch(proxyUrl, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            participant_id: participantData.participant_id,
-                            csv_data: csvData,
-                            timestamp: participantData.timestamp
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        const result = await response.json();
-                        if (result.success) {
-                            return {
-                                success: true,
-                                method: 'server_proxy',
-                                message: 'Data successfully submitted to GitHub repository via server proxy!',
-                                details: result,
-                                filename: result.filename
-                            };
-                        }
-                    } else {
-                        console.warn(`Proxy ${proxyUrl} returned ${response.status}: ${response.statusText}`);
-                    }
-                } catch (proxyError) {
-                    console.warn(`Proxy attempt failed for ${proxyUrl}:`, proxyError.message);
-                    continue; // Try next URL
-                }
-            }
-            
-            throw new Error('All proxy endpoints failed or are not available');
-        } catch (error) {
-            console.warn('Server proxy submission failed:', error);
-            return { success: false, error: error.message };
-        }
-    }
-    
-    /**
-     * Submit data via GitHub Pages hosted endpoint (using GitHub Actions)
-     */
-    async submitViaHostedEndpoint(participantData) {
-        // For now, this method is not implemented as GitHub's public APIs
-        // require authentication for most operations
-        console.warn('Hosted endpoint submission not implemented: Requires authenticated endpoints');
-        return { 
-            success: false, 
-            error: 'Hosted endpoint not available - authentication required' 
-        };
-    }
-
-    /**
-     * Format participant data for public GitHub issue submission
-     */
-    formatDataForPublicIssue(data) {
-        const csvData = this.convertToCSV(data);
-        
-        return `## 🔬 Trust Game Experiment Data Submission
-
-**Participant ID:** \`${data.participant_id}\`  
-**Timestamp:** ${data.timestamp}  
-**Completion Time:** ${data.summary.completion_time || 'N/A'}  
-
-### 📊 Summary Statistics
-- **Total Earnings:** $${data.summary.total_earnings || 0}
-- **Average Amount Sent:** $${(data.summary.average_amount_sent || 0).toFixed(2)}
-- **Trust Pattern:** ${data.summary.trust_pattern || 'N/A'}
-
-### 📋 Experiment Data
-
-<details>
-<summary>Click to view CSV data</summary>
-
-\`\`\`csv
-${csvData}
-\`\`\`
-
-</details>
-
-### 🤖 Processing Instructions
-This issue was automatically created by the Trust Game experiment. The CSV data above should be saved to the \`/data\` folder using the filename: \`trust_game_data_${data.participant_id}_${new Date().toISOString().replace(/[:.]/g, '').replace('T', '_').slice(0, -1)}.csv\`
-
-To process this data:
-1. Copy the CSV data from the code block above
-2. Create a new file in the \`/data\` folder with the specified filename
-3. Paste the CSV data and commit the file
-4. Close this issue
-
----
-*Automated submission from Trust Game experiment v${data.version}*`;
-    }
-
-    /**
-     * Format participant data for GitHub issue submission
-     */
-    formatDataForIssue(data) {
-        return this.formatDataForPublicIssue(data);
+    getOSFManualSubmissionInstructions() {
+        return [
+            '1. Go to pipe.jspsych.org',
+            '2. Enter your experiment ID: trust_game_ccc_2024', 
+            '3. Upload the JSON data provided below',
+            '4. Or use your OSF project to store the CSV data',
+            '5. Contact the researcher if you need assistance'
+        ];
     }
 
     /**
