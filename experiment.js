@@ -384,10 +384,19 @@ class TrustGameExperiment {
             if (result.success) {
                 let successMessage = `
                     <p>✅ <strong>Data Successfully Saved!</strong></p>
-                    <p>Your data has been automatically saved to the repository's data folder.</p>
                 `;
                 
-                if (result.method === 'github_issue') {
+                if (result.method === 'osf_datapipe') {
+                    successMessage = `
+                        <p>✅ <strong>Data Submitted to OSF DataPipe!</strong></p>
+                        <p>Your data has been securely saved to the Open Science Framework.</p>
+                        <div class="osf-details">
+                            <p><strong>Session ID:</strong> <code>${result.sessionId || 'N/A'}</code></p>
+                            <p><strong>Experiment ID:</strong> <code>${result.experimentId || 'N/A'}</code></p>
+                            <p><small>Your data is now part of the open science research database.</small></p>
+                        </div>
+                    `;
+                } else if (result.method === 'github_issue') {
                     successMessage = `
                         <p>✅ <strong>Data Submitted Successfully!</strong></p>
                         <p>Your data has been submitted via GitHub issue and will be processed automatically.</p>
@@ -397,6 +406,11 @@ class TrustGameExperiment {
                     successMessage = `
                         <p>✅ <strong>Data Submission Triggered!</strong></p>
                         <p>Your data is being processed automatically and will be saved to the repository shortly.</p>
+                    `;
+                } else if (result.method === 'server_proxy') {
+                    successMessage = `
+                        <p>✅ <strong>Data Saved to Repository!</strong></p>
+                        <p>Your data has been automatically saved to the repository's data folder.</p>
                     `;
                 }
                 
@@ -409,11 +423,42 @@ class TrustGameExperiment {
                     <p>${result.message}</p>
                 `;
                 
+                if (result.showOSFInstructions) {
+                    errorMessage += `
+                        <div class="osf-backup-instructions">
+                            <h4>🔬 Alternative: Submit to OSF Manually</h4>
+                            <div class="submission-steps">
+                                <div class="step">
+                                    <span class="step-number">1</span>
+                                    <div class="step-content">
+                                        <strong>Go to OSF DataPipe</strong>
+                                        <a href="https://pipe.jspsych.org/" target="_blank" class="btn btn-sm" style="margin-left: 10px;">🔗 Open DataPipe</a>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="step-number">2</span>
+                                    <div class="step-content">
+                                        <strong>Use Experiment ID:</strong> <code>trust_game_ccc_2024</code>
+                                        <button class="btn btn-sm" onclick="experiment.copyToClipboard('trust_game_ccc_2024')" style="margin-left: 10px;">📋 Copy</button>
+                                    </div>
+                                </div>
+                                <div class="step">
+                                    <span class="step-number">3</span>
+                                    <div class="step-content">
+                                        <strong>Upload your data</strong>
+                                        <button class="btn btn-sm" onclick="experiment.copyOSFData()" style="margin-left: 10px;">📋 Copy OSF Data</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+                
                 if (result.showManualInstructions) {
                     const filename = this.dataSubmitter.generateFilename(this.participantId);
                     errorMessage += `
                         <div class="manual-submission-instructions">
-                            <h4>📤 Easy Manual Submission:</h4>
+                            <h4>📤 GitHub Manual Submission:</h4>
                             <div class="submission-steps">
                                 <div class="step">
                                     <span class="step-number">1</span>
@@ -458,7 +503,7 @@ class TrustGameExperiment {
                 
                 errorMessage += `
                     <div class="data-copy-area">
-                        <p><strong>Filename:</strong> ${this.dataSubmitter.generateFilename(this.participantId)}</p>
+                        <p><strong>CSV Data:</strong></p>
                         <textarea readonly style="width: 100%; height: 200px; font-family: monospace; font-size: 12px;">${this.convertToCSV()}</textarea>
                         <button class="btn" onclick="experiment.copyDataToClipboard()">Copy CSV Data</button>
                     </div>
@@ -490,6 +535,57 @@ class TrustGameExperiment {
         }).catch(err => {
             console.error('Failed to copy data:', err);
             alert('Failed to copy data to clipboard. Please select and copy the text manually.');
+        });
+    }
+
+    copyOSFData() {
+        // Format data for OSF DataPipe manual submission
+        const osfData = {
+            experimentID: 'trust_game_ccc_2024',
+            sessionID: `session_${this.participantId}`,
+            data: this.data.trials.map((trial, index) => ({
+                experiment_id: 'trust_game_ccc_2024',
+                session_id: `session_${this.participantId}`,
+                participant_id: this.data.participant_id,
+                trial_index: index,
+                trial_type: 'trust-game-trial',
+                round: trial.round,
+                amount_sent: trial.amount_sent,
+                amount_kept: trial.amount_kept,
+                partner_received: trial.partner_received,
+                amount_returned: trial.amount_returned,
+                final_earnings: trial.final_earnings,
+                return_rate: trial.return_rate,
+                reaction_time: trial.reaction_time,
+                trial_timestamp: trial.timestamp,
+                participant_age: this.data.demographics.age,
+                participant_gender: this.data.demographics.gender,
+                participant_field: this.data.demographics.field,
+                experiment_version: this.data.version,
+                experiment_name: this.data.experiment,
+                participant_timestamp: this.data.timestamp,
+                total_earnings: this.data.summary.total_earnings,
+                average_amount_sent: this.data.summary.average_amount_sent,
+                trust_pattern: this.data.summary.trust_pattern,
+                completion_time: this.data.summary.completion_time
+            }))
+        };
+        
+        const jsonData = JSON.stringify(osfData, null, 2);
+        navigator.clipboard.writeText(jsonData).then(() => {
+            this.showToast('✅ OSF data copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy OSF data:', err);
+            alert('Failed to copy OSF data to clipboard. Please select and copy the text manually.');
+        });
+    }
+
+    copyToClipboard(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            this.showToast('✅ Copied to clipboard!');
+        }).catch(err => {
+            console.error('Failed to copy text:', err);
+            alert('Failed to copy to clipboard. Please copy manually: ' + text);
         });
     }
 

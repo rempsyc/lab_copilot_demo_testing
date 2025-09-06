@@ -324,3 +324,82 @@ h2 {
     font-family: 'Courier New', monospace;
     color: #d63384;
 }
+
+/* OSF DataPipe specific styles */
+.osf-backup-instructions {
+    background-color: #d1ecf1;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #17a2b8;
+    margin: 15px 0;
+}
+
+.osf-backup-instructions h4 {
+    color: #0c5460;
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+}
+
+.osf-backup-instructions .step {
+    background-color: #f0f9fa;
+    border: 1px solid #b8dadf;
+}
+
+.osf-backup-instructions .step-number {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.osf-backup-instructions .step-content {
+    color: #0c5460;
+}
+
+.osf-backup-instructions .step-content strong {
+    color: #083c42;
+}
+
+.osf-details {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+    margin: 10px 0;
+}
+
+.osf-details p {
+    margin: 8px 0;
+    color: #495057;
+}
+
+.osf-details code {
+    background-color: #e9ecef;
+    padding: 3px 6px;
+    border-radius: 3px;
+    font-family: 'Courier New', monospace;
+    color: #6f42c1;
+    font-weight: bold;
+}
+
+.osf-details small {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Success message improvements */
+.success-message {
+    background-color: #d4edda;
+    color: #155724;
+    padding: 20px;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+    margin: 20px 0;
+}
+
+.success-message p {
+    margin: 10px 0;
+}
+
+.success-message strong {
+    color: #0f4419;
+}
