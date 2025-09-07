@@ -33,74 +33,98 @@
         <p><strong>Instructions:</strong> Click "Start Test" below. The experiment will run one trial and attempt DataPipe submission.</p>
     </div>
 
+    <div style="text-align: center; margin: 20px;">
+        <button id="start-btn" onclick="startExperiment()" style="background-color: #28a745; color: white; border: none; padding: 15px 30px; font-size: 16px; cursor: pointer; border-radius: 5px;">
+            ▶️ Start Test
+        </button>
+    </div>
+
     <div id="jspsych-experiment"></div>
 
     <script>
         // Initialize jsPsych
-        const jsPsych = initJsPsych({
-            on_finish: function() {
-                // Display results
-                jsPsych.data.displayData();
-            }
-        });
+        let jsPsych;
 
-        // Create a simple trial
-        const welcome = {
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: `
-                <h2>DataPipe Test Trial</h2>
-                <p>This is a test trial for DataPipe submission.</p>
-                <p>Press any key to continue and submit data.</p>
-            `,
-            post_trial_gap: 1000
-        };
+        function startExperiment() {
+            // Hide the start button
+            document.getElementById('start-btn').style.display = 'none';
+            
+            // Initialize jsPsych
+            jsPsych = initJsPsych({
+                display_element: 'jspsych-experiment',
+                on_finish: function() {
+                    // Display results
+                    jsPsych.data.displayData();
+                    
+                    // Show restart button
+                    document.getElementById('jspsych-experiment').innerHTML += `
+                        <div style="text-align: center; margin: 20px;">
+                            <button onclick="location.reload()" style="background-color: #007bff; color: white; border: none; padding: 10px 20px; cursor: pointer; border-radius: 5px;">
+                                🔄 Run Test Again
+                            </button>
+                        </div>
+                    `;
+                }
+            });
 
-        // DataPipe submission trial
-        const datapipe_save = {
-            type: jsPsychPipe,
-            action: "save",
-            experiment_id: "Cb1DhSdND5ek",
-            filename: "minimal_test_" + Date.now() + ".csv",
-            data_string: function() {
-                // Get all experiment data
-                const allData = jsPsych.data.get().csv();
-                return allData;
-            }
-        };
+            // Create a simple trial
+            const welcome = {
+                type: jsPsychHtmlKeyboardResponse,
+                stimulus: `
+                    <h2>DataPipe Test Trial</h2>
+                    <p>This is a test trial for DataPipe submission.</p>
+                    <p>Press any key to continue and submit data.</p>
+                `,
+                post_trial_gap: 1000
+            };
 
-        // Final message
-        const finish = {
-            type: jsPsychHtmlKeyboardResponse,
-            stimulus: `
-                <h2>Test Complete</h2>
-                <p>DataPipe submission attempted.</p>
-                <p>Check the browser console and DataPipe dashboard for results.</p>
-                <p>Press any key to see raw data.</p>
-            `,
-            post_trial_gap: 500
-        };
+            // DataPipe submission trial
+            const datapipe_save = {
+                type: jsPsychPipe,
+                action: "save",
+                experiment_id: "Cb1DhSdND5ek",
+                filename: "minimal_test_" + Date.now() + ".csv",
+                data_string: function() {
+                    // Get all experiment data
+                    const allData = jsPsych.data.get().csv();
+                    return allData;
+                }
+            };
 
-        // Create timeline
-        const timeline = [welcome, datapipe_save, finish];
+            // Final message
+            const finish = {
+                type: jsPsychHtmlKeyboardResponse,
+                stimulus: `
+                    <h2>Test Complete</h2>
+                    <p>DataPipe submission attempted.</p>
+                    <p>Check the browser console and DataPipe dashboard for results.</p>
+                    <p>Press any key to see raw data.</p>
+                `,
+                post_trial_gap: 500
+            };
 
-        // Add experiment properties to all trials
-        jsPsych.data.addProperties({
-            experiment_id: 'Cb1DhSdND5ek',
-            participant_id: 'test_participant_' + Date.now(),
-            session_id: 'test_session_' + Date.now(),
-            experiment_version: '1.0',
-            test_type: 'minimal_datapipe_test'
-        });
+            // Create timeline
+            const timeline = [welcome, datapipe_save, finish];
 
-        // Start the experiment
-        jsPsych.run(timeline);
+            // Add experiment properties to all trials
+            jsPsych.data.addProperties({
+                experiment_id: 'Cb1DhSdND5ek',
+                participant_id: 'test_participant_' + Date.now(),
+                session_id: 'test_session_' + Date.now(),
+                experiment_version: '1.0',
+                test_type: 'minimal_datapipe_test'
+            });
+
+            // Start the experiment
+            jsPsych.run(timeline);
+        }
 
         // Add debug information
         console.log('Minimal DataPipe Test Configuration:');
         console.log('- Experiment ID: Cb1DhSdND5ek');
         console.log('- DataPipe Plugin Version: 0.3.0');
         console.log('- jsPsych Version: 7.3.4');
-        console.log('- Test Started:', new Date().toISOString());
+        console.log('- Test Ready. Click "Start Test" to begin.');
     </script>
 </body>
 </html>
