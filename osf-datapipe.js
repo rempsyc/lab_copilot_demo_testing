@@ -92,78 +92,118 @@ class OSFDataPipe {
 
     /**
      * Format experiment data for OSF DataPipe
-     * DataPipe expects a specific format with trial-level data
+     * DataPipe expects specific format matching jsPsych DataPipe plugin
      */
     formatDataForOSF(data) {
-        const formattedTrials = data.trials.map((trial, index) => ({
-            // Core DataPipe fields
+        // Generate unique filename for this session
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '').replace('T', '_').slice(0, -8);
+        const filename = `${data.participant_id}_${timestamp}.csv`;
+        
+        // Format data as CSV string (required by DataPipe)
+        const csvData = this.convertToCSV(data);
+        
+        // Return format matching jsPsych DataPipe plugin as shown in OSF configuration
+        return {
+            action: "save",
             experiment_id: this.configuration.experimentId,
             session_id: this.configuration.sessionId,
-            participant_id: data.participant_id,
-            trial_index: index,
-            trial_type: 'trust-game-trial',
-            
-            // Trust game specific data
-            round: trial.round,
-            amount_sent: trial.amount_sent,
-            amount_kept: trial.amount_kept,
-            partner_received: trial.partner_received,
-            amount_returned: trial.amount_returned,
-            final_earnings: trial.final_earnings,
-            return_rate: trial.return_rate,
-            reaction_time: trial.reaction_time,
-            trial_timestamp: trial.timestamp,
-            
-            // Participant info (repeated for each trial for easy analysis)
-            participant_age: data.demographics.age,
-            participant_gender: data.demographics.gender,
-            participant_field: data.demographics.field,
-            
-            // Experiment metadata
-            experiment_version: data.version,
-            experiment_name: data.experiment,
-            participant_timestamp: data.timestamp,
-            
-            // Summary data (repeated for convenience)
-            total_earnings: data.summary.total_earnings,
-            average_amount_sent: data.summary.average_amount_sent,
-            trust_pattern: data.summary.trust_pattern,
-            completion_time: data.summary.completion_time
-        }));
-
-        return {
-            experimentID: this.configuration.experimentId,
-            sessionID: this.configuration.sessionId,
-            data: formattedTrials
+            filename: filename,
+            data_string: csvData
         };
     }
 
     /**
-     * Create a backup submission to OSF via alternative method
-     * This could be used as a fallback if the main DataPipe fails
+     * Convert experiment data to CSV format for DataPipe
+     */
+    convertToCSV(data) {
+        // CSV headers with all required jsPsych and experiment fields
+        const headers = [
+            'trial_type',
+            'trial_index', 
+            'time_elapsed',
+            'rt',
+            'experiment_id',
+            'session_id',
+            'participant_id',
+            'round',
+            'amount_sent',
+            'amount_kept',
+            'partner_received',
+            'amount_returned',
+            'final_earnings',
+            'return_rate',
+            'trial_timestamp',
+            'participant_age',
+            'participant_gender',
+            'participant_field',
+            'experiment_version',
+            'experiment_name',
+            'participant_timestamp',
+            'total_earnings',
+            'average_amount_sent',
+            'trust_pattern',
+            'completion_time'
+        ];
+        
+        // Convert each trial to CSV row
+        const rows = data.trials.map((trial, index) => [
+            'trust-game-trial',
+            index,
+            (index + 1) * 10000, // Approximate time elapsed
+            trial.reaction_time || '',
+            this.configuration.experimentId,
+            this.configuration.sessionId,
+            data.participant_id,
+            trial.round,
+            trial.amount_sent,
+            trial.amount_kept,
+            trial.partner_received,
+            trial.amount_returned,
+            trial.final_earnings,
+            trial.return_rate,
+            trial.timestamp,
+            data.demographics.age || '',
+            data.demographics.gender || '',
+            data.demographics.field || '',
+            data.version,
+            data.experiment,
+            data.timestamp,
+            data.summary.total_earnings || '',
+            data.summary.average_amount_sent || '',
+            data.summary.trust_pattern || '',
+            data.summary.completion_time || ''
+        ]);
+        
+        // Combine headers and rows into CSV format
+        return [headers, ...rows]
+            .map(row => row.map(field => `"${field}"`).join(','))
+            .join('\n');
+    }
+
+    /**
+     * Create a backup submission option when DataPipe fails
+     * Returns clean instructions focused on CSV download
      */
     async createBackupSubmission(data) {
-        // For now, this returns the data formatted for manual submission
-        // Could be extended to use OSF API directly if needed
+        const csvData = this.convertToCSV(data);
         return {
             success: false,
-            method: 'manual_backup',
-            message: 'Please save this data manually to your OSF project',
-            data: this.formatDataForOSF(data),
-            instructions: this.getManualSubmissionInstructions()
+            method: 'local_fallback',
+            message: 'OSF DataPipe unavailable. Data saved locally for download.',
+            csvData: csvData,
+            instructions: this.getDataSubmissionInstructions()
         };
     }
 
     /**
-     * Get instructions for manual data submission to OSF
+     * Get clean instructions for data submission fallback
      */
-    getManualSubmissionInstructions() {
+    getDataSubmissionInstructions() {
         return [
-            '1. Go to your OSF project page',
-            '2. Navigate to Files section', 
-            '3. Create a new file or upload the data',
-            '4. Use filename: trust_game_data_[participant_id]_[timestamp].json',
-            '5. Paste the formatted data from above'
+            'OSF DataPipe submission failed.',
+            'Your data has been saved locally.',
+            'Please download the CSV file using the button provided.',
+            'Contact the researcher if you need assistance.'
         ];
     }
 

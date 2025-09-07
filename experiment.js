@@ -452,48 +452,6 @@ class TrustGameExperiment {
         });
     }
 
-    copyOSFData() {
-        // Format data for OSF DataPipe manual submission
-        const osfData = {
-            experimentID: 'xMeT3pzdPmF9',
-            sessionID: `session_${this.participantId}`,
-            data: this.data.trials.map((trial, index) => ({
-                experiment_id: 'xMeT3pzdPmF9',
-                session_id: `session_${this.participantId}`,
-                participant_id: this.data.participant_id,
-                trial_index: index,
-                trial_type: 'trust-game-trial',
-                round: trial.round,
-                amount_sent: trial.amount_sent,
-                amount_kept: trial.amount_kept,
-                partner_received: trial.partner_received,
-                amount_returned: trial.amount_returned,
-                final_earnings: trial.final_earnings,
-                return_rate: trial.return_rate,
-                reaction_time: trial.reaction_time,
-                trial_timestamp: trial.timestamp,
-                participant_age: this.data.demographics.age,
-                participant_gender: this.data.demographics.gender,
-                participant_field: this.data.demographics.field,
-                experiment_version: this.data.version,
-                experiment_name: this.data.experiment,
-                participant_timestamp: this.data.timestamp,
-                total_earnings: this.data.summary.total_earnings,
-                average_amount_sent: this.data.summary.average_amount_sent,
-                trust_pattern: this.data.summary.trust_pattern,
-                completion_time: this.data.summary.completion_time
-            }))
-        };
-        
-        const jsonData = JSON.stringify(osfData, null, 2);
-        navigator.clipboard.writeText(jsonData).then(() => {
-            this.showToast('✅ OSF data copied to clipboard!');
-        }).catch(err => {
-            console.error('Failed to copy OSF data:', err);
-            alert('Failed to copy OSF data to clipboard. Please select and copy the text manually.');
-        });
-    }
-
     copyToClipboard(text) {
         navigator.clipboard.writeText(text).then(() => {
             this.showToast('✅ Copied to clipboard!');
