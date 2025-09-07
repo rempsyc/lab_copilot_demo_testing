@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSF DataPipe Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .test-result { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .warning { background-color: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 4px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #f8f9fa; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .experiment-id { font-family: monospace; background-color: #e9ecef; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>OSF DataPipe Configuration Test</h1>
+    
+    <div class="warning">
+        <strong>Purpose:</strong> This test helps verify if the OSF DataPipe endpoint is properly configured for experiment ID <span class="experiment-id">xMeT3pzdPmF9</span>.
+    </div>
+
+    <h2>Current Configuration</h2>
+    <ul>
+        <li><strong>Experiment ID:</strong> <span class="experiment-id">xMeT3pzdPmF9</span></li>
+        <li><strong>DataPipe URL:</strong> <span class="experiment-id">https://pipe.jspsych.org/api/data/</span></li>
+        <li><strong>Expected Result:</strong> Success (200) or detailed error message</li>
+    </ul>
+
+    <h2>Test DataPipe Submission</h2>
+    <button onclick="testDataPipeSubmission()">Test OSF DataPipe</button>
+    <button onclick="clearResults()">Clear Results</button>
+
+    <div id="test-results"></div>
+
+    <h2>Manual Testing Instructions</h2>
+    <div class="warning">
+        <p><strong>If the automated test fails, try these steps manually:</strong></p>
+        <ol>
+            <li>Go to <a href="https://pipe.jspsych.org" target="_blank">pipe.jspsych.org</a></li>
+            <li>Check if experiment ID <span class="experiment-id">xMeT3pzdPmF9</span> is listed</li>
+            <li>Verify that the experiment is active and properly configured</li>
+            <li>Test manual data submission with the sample data below</li>
+        </ol>
+    </div>
+
+    <h3>Sample Test Data</h3>
+    <pre id="sample-data">{
+  "experimentID": "xMeT3pzdPmF9",
+  "sessionID": "test_session_manual",
+  "data": [
+    {
+      "trial_type": "trust-game-trial",
+      "trial_index": 0,
+      "time_elapsed": 10000,
+      "rt": 2500,
+      "round": 1,
+      "amount_sent": 5,
+      "amount_kept": 5,
+      "partner_received": 25,
+      "amount_returned": 7,
+      "final_earnings": 12
+    }
+  ]
+}</pre>
+
+    <script>
+        async function testDataPipeSubmission() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            // Show loading state
+            resultsDiv.innerHTML = '<div class="warning">Testing OSF DataPipe submission...</div>';
+            
+            const testData = {
+                experimentID: 'xMeT3pzdPmF9',
+                sessionID: 'test_session_' + Date.now(),
+                data: [
+                    {
+                        trial_type: 'trust-game-trial',
+                        trial_index: 0,
+                        time_elapsed: 10000,
+                        rt: 2500,
+                        round: 1,
+                        amount_sent: 5,
+                        amount_kept: 5,
+                        partner_received: 25,
+                        amount_returned: 7,
+                        final_earnings: 12
+                    }
+                ]
+            };
+            
+            try {
+                console.log('Testing OSF DataPipe with data:', testData);
+                
+                const response = await fetch('https://pipe.jspsych.org/api/data/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(testData)
+                });
+                
+                const responseText = await response.text();
+                
+                if (response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Success!</h3>
+                            <p>OSF DataPipe submission successful!</p>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Response:</strong></p>
+                            <pre>${responseText}</pre>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ DataPipe Error</h3>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <p><strong>Error Response:</strong></p>
+                            <pre>${responseText}</pre>
+                            <p><strong>Possible Causes:</strong></p>
+                            <ul>
+                                <li>Experiment ID <code>xMeT3pzdPmF9</code> not registered in DataPipe</li>
+                                <li>DataPipe configuration incomplete</li>
+                                <li>Missing required fields in data format</li>
+                                <li>DataPipe service temporarily unavailable</li>
+                            </ul>
+                            <p><strong>Next Steps:</strong></p>
+                            <ol>
+                                <li>Verify experiment setup at <a href="https://pipe.jspsych.org" target="_blank">pipe.jspsych.org</a></li>
+                                <li>Check that experiment ID matches exactly</li>
+                                <li>Contact OSF DataPipe support if needed</li>
+                            </ol>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('DataPipe test failed:', error);
+                
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Network Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Possible Causes:</strong></p>
+                        <ul>
+                            <li>Network connectivity issues</li>
+                            <li>CORS restrictions</li>
+                            <li>Firewall blocking pipe.jspsych.org</li>
+                            <li>Browser security settings</li>
+                        </ul>
+                        <p><strong>Workaround:</strong> The experiment fallback (CSV download) is working correctly.</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
