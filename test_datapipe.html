@@ -31,8 +31,13 @@
     </ul>
 
     <h2>Test DataPipe Submission</h2>
-    <button onclick="testDataPipeSubmission()">Test OSF DataPipe</button>
+    <button onclick="testDataPipeOffline()">🔍 Test Data Format (Local)</button>
+    <button onclick="testDataPipeSubmission()">🌐 Test OSF DataPipe (Live)</button>
     <button onclick="clearResults()">Clear Results</button>
+    
+    <div class="warning">
+        <p><strong>Recommended:</strong> Start with "Test Data Format (Local)" to validate your data format before testing the live API.</p>
+    </div>
 
     <div id="test-results"></div>
 
@@ -47,14 +52,46 @@
         </ol>
     </div>
 
-    <h3>Sample Test Data</h3>
+    <h3>Sample Test Data (Improved Format)</h3>
     <pre id="sample-data">{
   "action": "save",
   "experiment_id": "xMeT3pzdPmF9",
   "session_id": "test_session_manual",
   "filename": "test_data_manual.csv",
-  "data_string": "trial_type,trial_index,time_elapsed,rt,round,amount_sent,amount_kept\n\"trust-game-trial\",0,10000,2500,1,5,5"
+  "data_string": "trial_type,trial_index,time_elapsed,rt,experiment_id,session_id,participant_id,round,amount_sent,amount_kept,partner_received,amount_returned,final_earnings,return_rate,trial_timestamp,participant_age,participant_gender,participant_field,experiment_version,experiment_name,participant_timestamp,total_earnings,average_amount_sent,trust_pattern,completion_time\n\"trust-game-trial\",0,10000,2500,\"xMeT3pzdPmF9\",\"test_session_manual\",\"test_participant\",1,5,5,25,7,12,0.28,\"2024-01-01T00:00:00.000Z\",25,\"Female\",\"Psychology\",\"1.0\",\"trust_game\",\"2024-01-01T00:00:00.000Z\",50,6,\"Moderate Trust\",\"2024-01-01T00:00:00.000Z\""
 }</pre>
+
+    <h3>Alternative Testing Methods</h3>
+    <div class="warning">
+        <p><strong>If the DataPipe API continues to fail, try these approaches:</strong></p>
+        <ol>
+            <li><strong>Use curl/Postman:</strong> Test the API directly with the JSON data above</li>
+            <li><strong>Check experiment registration:</strong> Verify your experiment ID at <a href="https://pipe.jspsych.org" target="_blank">pipe.jspsych.org</a></li>
+            <li><strong>Test with minimal jsPsych:</strong> Use the <a href="minimal_datapipe_test.html" target="_blank">minimal jsPsych test</a> (requires internet)</li>
+            <li><strong>Use the local format tester:</strong> Click "Test Data Format (Local)" above to validate your data structure</li>
+        </ol>
+    </div>
+
+    <h3>Command Line Testing (curl)</h3>
+    <div class="warning">
+        <p><strong>Copy and run this curl command to test the API directly:</strong></p>
+        <pre id="curl-command">curl -X POST https://pipe.jspsych.org/api/data/ \
+-H "Content-Type: application/json" \
+-d '{
+  "action": "save",
+  "experiment_id": "xMeT3pzdPmF9",
+  "session_id": "test_session_curl",
+  "filename": "test_data_curl.csv",
+  "data_string": "trial_type,trial_index,time_elapsed,rt,experiment_id,session_id,participant_id,round,amount_sent,amount_kept,partner_received,amount_returned,final_earnings,return_rate,trial_timestamp,participant_age,participant_gender,participant_field,experiment_version,experiment_name,participant_timestamp,total_earnings,average_amount_sent,trust_pattern,completion_time\n\"trust-game-trial\",0,10000,2500,\"xMeT3pzdPmF9\",\"test_session_curl\",\"test_participant\",1,5,5,25,7,12,0.28,\"2024-01-01T00:00:00.000Z\",25,\"Female\",\"Psychology\",\"1.0\",\"trust_game\",\"2024-01-01T00:00:00.000Z\",50,6,\"Moderate Trust\",\"2024-01-01T00:00:00.000Z\""
+}'</pre>
+        <p><strong>Expected Results:</strong></p>
+        <ul>
+            <li><strong>Success (200):</strong> Data submitted successfully</li>
+            <li><strong>400 Error:</strong> Missing or invalid parameters (check the error message for details)</li>
+            <li><strong>404 Error:</strong> Experiment ID not found or not configured</li>
+            <li><strong>Network Error:</strong> Connection issues or CORS restrictions</li>
+        </ul>
+    </div>
 
     <script>
         async function testDataPipeSubmission() {
@@ -63,16 +100,33 @@
             // Show loading state
             resultsDiv.innerHTML = '<div class="warning">Testing OSF DataPipe submission...</div>';
             
+            // Generate comprehensive test data matching jsPsych DataPipe format
             const testData = {
                 action: "save",
                 experiment_id: 'xMeT3pzdPmF9',
                 session_id: 'test_session_' + Date.now(),
                 filename: 'test_data_' + Date.now() + '.csv',
-                data_string: 'trial_type,trial_index,time_elapsed,rt,round,amount_sent,amount_kept,final_earnings\n"trust-game-trial",0,10000,2500,1,5,5,12'
+                data_string: generateComprehensiveTestData()
             };
             
             try {
                 console.log('Testing OSF DataPipe with data:', testData);
+                console.log('Data string preview:', testData.data_string.substring(0, 200) + '...');
+                
+                // First validate locally
+                const validation = validateDataPipeFormat(testData);
+                if (!validation.valid) {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Data Format Error</h3>
+                            <p><strong>Fix these issues before testing live API:</strong></p>
+                            <ul>
+                                ${validation.errors.map(error => `<li>❌ ${error}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                    return;
+                }
                 
                 const response = await fetch('https://pipe.jspsych.org/api/data/', {
                     method: 'POST',
@@ -83,6 +137,8 @@
                 });
                 
                 const responseText = await response.text();
+                console.log('Response status:', response.status);
+                console.log('Response text:', responseText);
                 
                 if (response.ok) {
                     resultsDiv.innerHTML = `
@@ -92,27 +148,40 @@
                             <p><strong>Status:</strong> ${response.status}</p>
                             <p><strong>Response:</strong></p>
                             <pre>${responseText}</pre>
+                            <p><strong>Data submitted:</strong></p>
+                            <ul>
+                                <li>Experiment ID: ${testData.experiment_id}</li>
+                                <li>Session ID: ${testData.session_id}</li>
+                                <li>Filename: ${testData.filename}</li>
+                                <li>Data rows: ${testData.data_string.split('\n').length}</li>
+                            </ul>
                         </div>
                     `;
                 } else {
+                    // Try to parse error response
+                    let errorDetails = responseText;
+                    try {
+                        const errorJson = JSON.parse(responseText);
+                        if (errorJson.error && errorJson.message) {
+                            errorDetails = `${errorJson.error}: ${errorJson.message}`;
+                        }
+                    } catch (e) {
+                        // Keep original response text if not JSON
+                    }
+                    
                     resultsDiv.innerHTML = `
                         <div class="error">
                             <h3>❌ DataPipe Error</h3>
                             <p><strong>Status:</strong> ${response.status}</p>
-                            <p><strong>Error Response:</strong></p>
-                            <pre>${responseText}</pre>
-                            <p><strong>Possible Causes:</strong></p>
-                            <ul>
-                                <li>Experiment ID <code>xMeT3pzdPmF9</code> not registered in DataPipe</li>
-                                <li>DataPipe configuration incomplete</li>
-                                <li>Missing required fields in data format</li>
-                                <li>DataPipe service temporarily unavailable</li>
-                            </ul>
-                            <p><strong>Next Steps:</strong></p>
+                            <p><strong>Error Details:</strong> ${errorDetails}</p>
+                            <p><strong>Request Data:</strong></p>
+                            <pre>${JSON.stringify(testData, null, 2)}</pre>
+                            <p><strong>Troubleshooting Steps:</strong></p>
                             <ol>
-                                <li>Verify experiment setup at <a href="https://pipe.jspsych.org" target="_blank">pipe.jspsych.org</a></li>
-                                <li>Check that experiment ID matches exactly</li>
-                                <li>Contact OSF DataPipe support if needed</li>
+                                <li>Verify experiment ID "${testData.experiment_id}" is registered at <a href="https://pipe.jspsych.org" target="_blank">pipe.jspsych.org</a></li>
+                                <li>Check that your OSF project has DataPipe properly configured</li>
+                                <li>Ensure the experiment is active and accepting data</li>
+                                <li>Try copying the request data above and testing with curl or Postman</li>
                             </ol>
                         </div>
                     `;
@@ -138,6 +207,148 @@
             }
         }
         
+        function generateComprehensiveTestData() {
+            // Generate test data matching the exact format from the experiment
+            const headers = [
+                'trial_type', 'trial_index', 'time_elapsed', 'rt', 'experiment_id', 'session_id',
+                'participant_id', 'round', 'amount_sent', 'amount_kept', 'partner_received',
+                'amount_returned', 'final_earnings', 'return_rate', 'trial_timestamp',
+                'participant_age', 'participant_gender', 'participant_field', 'experiment_version',
+                'experiment_name', 'participant_timestamp', 'total_earnings', 'average_amount_sent',
+                'trust_pattern', 'completion_time'
+            ];
+            
+            // Generate sample trial data
+            const sessionId = 'test_session_' + Date.now();
+            const participantId = 'test_participant_' + Date.now();
+            const timestamp = new Date().toISOString();
+            
+            const rows = [
+                [
+                    'trust-game-trial', 0, 10000, 2500, 'xMeT3pzdPmF9', sessionId,
+                    participantId, 1, 5, 5, 25, 7, 12, 0.28, timestamp,
+                    25, 'Female', 'Psychology', '1.0', 'trust_game', timestamp,
+                    50, 6, 'Moderate Trust', timestamp
+                ],
+                [
+                    'trust-game-trial', 1, 20000, 1800, 'xMeT3pzdPmF9', sessionId,
+                    participantId, 2, 8, 2, 34, 12, 14, 0.35, timestamp,
+                    25, 'Female', 'Psychology', '1.0', 'trust_game', timestamp,
+                    50, 6, 'Moderate Trust', timestamp
+                ]
+            ];
+            
+            // Format as CSV
+            const csvRows = [headers, ...rows];
+            return csvRows.map(row => 
+                row.map(field => `"${field}"`).join(',')
+            ).join('\n');
+        }
+
+        async function testDataPipeOffline() {
+            const resultsDiv = document.getElementById('test-results');
+            
+            // Show loading state
+            resultsDiv.innerHTML = '<div class="warning">Testing DataPipe data format locally...</div>';
+            
+            try {
+                const testData = {
+                    action: "save",
+                    experiment_id: 'xMeT3pzdPmF9',
+                    session_id: 'test_session_' + Date.now(),
+                    filename: 'test_data_' + Date.now() + '.csv',
+                    data_string: generateComprehensiveTestData()
+                };
+                
+                // Validate the data format
+                const validation = validateDataPipeFormat(testData);
+                
+                if (validation.valid) {
+                    resultsDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ Data Format Validation Passed!</h3>
+                            <p><strong>Status:</strong> Local validation successful</p>
+                            <p><strong>All required parameters present:</strong></p>
+                            <ul>
+                                <li>✅ action: "${testData.action}"</li>
+                                <li>✅ experiment_id: "${testData.experiment_id}"</li>
+                                <li>✅ session_id: "${testData.session_id}"</li>
+                                <li>✅ filename: "${testData.filename}"</li>
+                                <li>✅ data_string: ${testData.data_string.split('\n').length} rows</li>
+                            </ul>
+                            <p><strong>Data Preview:</strong></p>
+                            <pre>${testData.data_string.split('\n').slice(0, 3).join('\n')}...</pre>
+                            <p><strong>Next Steps:</strong></p>
+                            <ol>
+                                <li>Verify experiment ID "${testData.experiment_id}" is registered at <a href="https://pipe.jspsych.org" target="_blank">pipe.jspsych.org</a></li>
+                                <li>Check that your OSF project has DataPipe enabled</li>
+                                <li>Try the live API test if format looks correct</li>
+                            </ol>
+                        </div>
+                    `;
+                } else {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h3>❌ Data Format Validation Failed</h3>
+                            <p><strong>Missing or invalid parameters:</strong></p>
+                            <ul>
+                                ${validation.errors.map(error => `<li>❌ ${error}</li>`).join('')}
+                            </ul>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h3>❌ Validation Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function validateDataPipeFormat(data) {
+            const errors = [];
+            const requiredFields = ['action', 'experiment_id', 'session_id', 'filename', 'data_string'];
+            
+            // Check required fields
+            requiredFields.forEach(field => {
+                if (!data[field] || data[field].toString().trim() === '') {
+                    errors.push(`Missing required field: ${field}`);
+                }
+            });
+            
+            // Validate action
+            if (data.action && data.action !== 'save') {
+                errors.push(`Invalid action: ${data.action} (should be "save")`);
+            }
+            
+            // Validate experiment_id format
+            if (data.experiment_id && !/^[a-zA-Z0-9_-]+$/.test(data.experiment_id)) {
+                errors.push(`Invalid experiment_id format: ${data.experiment_id} (should contain only letters, numbers, underscores, and dashes)`);
+            }
+            
+            // Validate data_string is CSV format
+            if (data.data_string) {
+                const lines = data.data_string.split('\n');
+                if (lines.length < 2) {
+                    errors.push('data_string should contain at least header and one data row');
+                }
+                
+                // Check if first line looks like headers
+                const headers = lines[0];
+                if (!headers.includes('trial_type') || !headers.includes('trial_index')) {
+                    errors.push('data_string should include standard jsPsych headers (trial_type, trial_index)');
+                }
+            }
+            
+            return {
+                valid: errors.length === 0,
+                errors: errors
+            };
+        }
+
         function clearResults() {
             document.getElementById('test-results').innerHTML = '';
         }

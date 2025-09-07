@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal jsPsych DataPipe Test</title>
+    <script src="https://unpkg.com/jspsych@7.3.4"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-html-keyboard-response@1.1.2"></script>
+    <script src="https://unpkg.com/@jspsych/plugin-pipe@0.3.0"></script>
+    <link href="https://unpkg.com/jspsych@7.3.4/css/jspsych.css" rel="stylesheet" type="text/css" />
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .instructions { background-color: #f8f9fa; padding: 20px; margin: 20px; border-radius: 5px; }
+        .config { background-color: #e3f2fd; padding: 15px; margin: 20px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <div class="instructions">
+        <h1>Minimal jsPsych DataPipe Test</h1>
+        <p><strong>Purpose:</strong> This is a minimal jsPsych experiment that tests OSF DataPipe submission.</p>
+        <p><strong>What it does:</strong> Creates a simple experiment with one trial and attempts to submit data to DataPipe.</p>
+        <p><strong>Benefits:</strong> Uses the official jsPsych DataPipe plugin, which may handle authentication and formatting better than custom code.</p>
+    </div>
+    
+    <div class="config">
+        <h3>Current Configuration</h3>
+        <ul>
+            <li><strong>Experiment ID:</strong> xMeT3pzdPmF9</li>
+            <li><strong>DataPipe URL:</strong> https://pipe.jspsych.org/api/data/</li>
+            <li><strong>jsPsych Version:</strong> 7.3.4</li>
+            <li><strong>DataPipe Plugin:</strong> 0.3.0</li>
+        </ul>
+        <p><strong>Instructions:</strong> Click "Start Test" below. The experiment will run one trial and attempt DataPipe submission.</p>
+    </div>
+
+    <div id="jspsych-experiment"></div>
+
+    <script>
+        // Initialize jsPsych
+        const jsPsych = initJsPsych({
+            on_finish: function() {
+                // Display results
+                jsPsych.data.displayData();
+            }
+        });
+
+        // Create a simple trial
+        const welcome = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+                <h2>DataPipe Test Trial</h2>
+                <p>This is a test trial for DataPipe submission.</p>
+                <p>Press any key to continue and submit data.</p>
+            `,
+            post_trial_gap: 1000
+        };
+
+        // DataPipe submission trial
+        const datapipe_save = {
+            type: jsPsychPipe,
+            action: "save",
+            experiment_id: "xMeT3pzdPmF9",
+            filename: "minimal_test_" + Date.now() + ".csv",
+            data_string: function() {
+                // Get all experiment data
+                const allData = jsPsych.data.get().csv();
+                return allData;
+            }
+        };
+
+        // Final message
+        const finish = {
+            type: jsPsychHtmlKeyboardResponse,
+            stimulus: `
+                <h2>Test Complete</h2>
+                <p>DataPipe submission attempted.</p>
+                <p>Check the browser console and DataPipe dashboard for results.</p>
+                <p>Press any key to see raw data.</p>
+            `,
+            post_trial_gap: 500
+        };
+
+        // Create timeline
+        const timeline = [welcome, datapipe_save, finish];
+
+        // Add experiment properties to all trials
+        jsPsych.data.addProperties({
+            experiment_id: 'xMeT3pzdPmF9',
+            participant_id: 'test_participant_' + Date.now(),
+            session_id: 'test_session_' + Date.now(),
+            experiment_version: '1.0',
+            test_type: 'minimal_datapipe_test'
+        });
+
+        // Start the experiment
+        jsPsych.run(timeline);
+
+        // Add debug information
+        console.log('Minimal DataPipe Test Configuration:');
+        console.log('- Experiment ID: xMeT3pzdPmF9');
+        console.log('- DataPipe Plugin Version: 0.3.0');
+        console.log('- jsPsych Version: 7.3.4');
+        console.log('- Test Started:', new Date().toISOString());
+    </script>
+</body>
+</html>
