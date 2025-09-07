@@ -30,7 +30,17 @@
         <li><strong>Expected Result:</strong> Success (200) or detailed error message</li>
     </ul>
 
-    <h2>Test DataPipe Submission</h2>
+    <h2>DataPipe Configuration Formats</h2>
+    
+    <div class="warning">
+        <p><strong>Important:</strong> There are two different formats you need to understand:</p>
+        <ul>
+            <li><strong>jsPsych Plugin Configuration:</strong> What you write in your jsPsych experiment code</li>
+            <li><strong>Raw API Data:</strong> What actually gets sent to the DataPipe server</li>
+        </ul>
+        <p>The jsPsych plugin automatically converts the first format into the second format before sending to the API.</p>
+    </div>
+    <h2>Live API Testing</h2>
     <button onclick="testDataFormatOffline()">🔍 Test Data Format (Local)</button>
     <button onclick="testDataPipeAPI()">🌐 Test OSF DataPipe (Live)</button>
     <button onclick="clearResults()">Clear Results</button>
@@ -52,7 +62,22 @@
         </ol>
     </div>
 
-    <h3>Sample Test Data (Improved Format)</h3>
+    <h3>jsPsych DataPipe Plugin Configuration</h3>
+    <div class="warning">
+        <p><strong>This is the format you use in your jsPsych experiment:</strong></p>
+    </div>
+    <pre id="jspsych-config">const save_data = {
+  type: jsPsychPipe,
+  action: "save",
+  experiment_id: "xMeT3pzdPmF9",
+  filename: "trust_game_" + Date.now() + ".csv",
+  data_string: () => jsPsych.data.get().csv()
+};</pre>
+
+    <h3>Raw API Data Format (What Gets Sent)</h3>
+    <div class="warning">
+        <p><strong>This is the actual JSON data that gets sent to the DataPipe API:</strong></p>
+    </div>
     <pre id="sample-data">{
   "action": "save",
   "experiment_id": "xMeT3pzdPmF9",
@@ -63,7 +88,7 @@
 
     <h3>Command Line Testing (curl)</h3>
     <div class="warning">
-        <p><strong>Copy and run this curl command to test the API directly:</strong></p>
+        <p><strong>Copy and run this curl command to test the raw API directly (matches the "Raw API Data Format" above):</strong></p>
         <pre id="curl-command">curl -X POST https://pipe.jspsych.org/api/data/ \
 -H "Content-Type: application/json" \
 -d '{
