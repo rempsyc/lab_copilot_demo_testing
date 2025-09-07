@@ -3,7 +3,7 @@
 ## Issue: "MISSING_PARAMETER" Error
 
 ### Problem
-When testing the OSF DataPipe API endpoint with experiment ID `xMeT3pzdPmF9`, the server returns:
+When testing the OSF DataPipe API endpoint with experiment ID `Cb1DhSdND5ek`, the server returns:
 ```json
 {"error":"MISSING_PARAMETER","message":"One or more required parameters are missing."}
 ```
@@ -27,7 +27,7 @@ Despite testing multiple parameter combinations, the error persists.
 
 ### Most Likely Causes
 
-1. **Experiment Not Registered**: The experiment ID `xMeT3pzdPmF9` may not be properly registered in the OSF DataPipe system
+1. **Experiment Not Registered**: The experiment ID `Cb1DhSdND5ek` may not be properly registered in the OSF DataPipe system
 2. **OSF Project Configuration**: The associated OSF project may not have DataPipe properly enabled or configured
 3. **Authentication Required**: The DataPipe endpoint may require authentication tokens or credentials that aren't being provided
 4. **Service Changes**: OSF DataPipe may have updated their API requirements since the experiment was configured
@@ -37,7 +37,7 @@ Despite testing multiple parameter combinations, the error persists.
 #### 1. Verify Experiment Registration
 - Go to [pipe.jspsych.org](https://pipe.jspsych.org)
 - Log in with your OSF credentials
-- Check if experiment ID `xMeT3pzdPmF9` is listed and active
+- Check if experiment ID `Cb1DhSdND5ek` is listed and active
 - Verify the experiment configuration matches your data format
 
 #### 2. Check OSF Project Settings
@@ -52,7 +52,7 @@ Instead of custom API calls, use the official jsPsych DataPipe plugin:
 const datapipe_trial = {
     type: jsPsychPipe,
     action: "save",
-    experiment_id: "xMeT3pzdPmF9",
+    experiment_id: "Cb1DhSdND5ek",
     filename: "data.csv",
     data_string: function() {
         return jsPsych.data.get().csv();
@@ -88,7 +88,7 @@ curl -X POST https://pipe.jspsych.org/api/data/ \
 -H "Content-Type: application/json" \
 -d '{
   "action": "save",
-  "experiment_id": "xMeT3pzdPmF9",
+  "experiment_id": "Cb1DhSdND5ek",
   "session_id": "test_session",
   "filename": "test_data.csv",
   "data_string": "trial_type,trial_index\n\"test\",0"
@@ -99,7 +99,7 @@ curl -X POST https://pipe.jspsych.org/api/data/ \
 -H "Content-Type: application/json" \
 -d '{
   "action": "save",
-  "experiment_id": "xMeT3pzdPmF9", 
+  "experiment_id": "Cb1DhSdND5ek", 
   "session_id": "test_session",
   "filename": "test_data.csv",
   "data_string": "trial_type,trial_index\n\"test\",0",
