@@ -76,27 +76,23 @@
 
     <h3>Raw API Data Format (What Gets Sent)</h3>
     <div class="warning">
-        <p><strong>This is the actual JSON data that gets sent to the DataPipe API:</strong></p>
+        <p><strong>This is the actual JSON data that gets sent to the DataPipe API (UPDATED FORMAT):</strong></p>
     </div>
     <pre id="sample-data">{
-  "action": "save",
-  "experiment_id": "Cb1DhSdND5ek",
-  "session_id": "test_session_manual",
+  "experimentID": "Cb1DhSdND5ek",
   "filename": "test_data_manual.csv",
-  "data_string": "trial_type,trial_index,time_elapsed,rt,experiment_id,session_id,participant_id,round,amount_sent,amount_kept,partner_received,amount_returned,final_earnings,return_rate,trial_timestamp,participant_age,participant_gender,participant_field,experiment_version,experiment_name,participant_timestamp,total_earnings,average_amount_sent,trust_pattern,completion_time\n\"trust-game-trial\",0,10000,2500,\"Cb1DhSdND5ek\",\"test_session_manual\",\"test_participant\",1,5,5,25,7,12,0.28,\"2024-01-01T00:00:00.000Z\",25,\"Female\",\"Psychology\",\"1.0\",\"trust_game\",\"2024-01-01T00:00:00.000Z\",50,6,\"Moderate Trust\",\"2024-01-01T00:00:00.000Z\""
+  "data": "trial_type,trial_index\n\"smoke-test\",0"
 }</pre>
 
     <h3>Command Line Testing (curl)</h3>
     <div class="warning">
-        <p><strong>Copy and run this curl command to test the raw API directly (matches the "Raw API Data Format" above):</strong></p>
+        <p><strong>Copy and run this curl command to test the raw API directly (UPDATED FORMAT):</strong></p>
         <pre id="curl-command">curl -X POST https://pipe.jspsych.org/api/data/ \
 -H "Content-Type: application/json" \
 -d '{
-  "action": "save",
-  "experiment_id": "Cb1DhSdND5ek",
-  "session_id": "test_session_curl",
+  "experimentID": "Cb1DhSdND5ek",
   "filename": "test_data_curl.csv",
-  "data_string": "trial_type,trial_index,time_elapsed,rt,experiment_id,session_id,participant_id,round,amount_sent,amount_kept,partner_received,amount_returned,final_earnings,return_rate,trial_timestamp,participant_age,participant_gender,participant_field,experiment_version,experiment_name,participant_timestamp,total_earnings,average_amount_sent,trust_pattern,completion_time\n\"trust-game-trial\",0,10000,2500,\"Cb1DhSdND5ek\",\"test_session_curl\",\"test_participant\",1,5,5,25,7,12,0.28,\"2024-01-01T00:00:00.000Z\",25,\"Female\",\"Psychology\",\"1.0\",\"trust_game\",\"2024-01-01T00:00:00.000Z\",50,6,\"Moderate Trust\",\"2024-01-01T00:00:00.000Z\""
+  "data": "trial_type,trial_index\n\"smoke-test\",0"
 }'</pre>
         <p><strong>Expected Results:</strong></p>
         <ul>
@@ -126,32 +122,12 @@
         function generateComprehensiveTestData() {
             // Generate test data matching the exact format from the experiment
             const headers = [
-                'trial_type', 'trial_index', 'time_elapsed', 'rt', 'experiment_id', 'session_id',
-                'participant_id', 'round', 'amount_sent', 'amount_kept', 'partner_received',
-                'amount_returned', 'final_earnings', 'return_rate', 'trial_timestamp',
-                'participant_age', 'participant_gender', 'participant_field', 'experiment_version',
-                'experiment_name', 'participant_timestamp', 'total_earnings', 'average_amount_sent',
-                'trust_pattern', 'completion_time'
+                'trial_type', 'trial_index'
             ];
             
-            // Generate sample trial data
-            const sessionId = 'test_session_' + Date.now();
-            const participantId = 'test_participant_' + Date.now();
-            const timestamp = new Date().toISOString();
-            
+            // Generate simple test data matching PowerShell example
             const rows = [
-                [
-                    'trust-game-trial', 0, 10000, 2500, 'Cb1DhSdND5ek', sessionId,
-                    participantId, 1, 5, 5, 25, 7, 12, 0.28, timestamp,
-                    25, 'Female', 'Psychology', '1.0', 'trust_game', timestamp,
-                    50, 6, 'Moderate Trust', timestamp
-                ],
-                [
-                    'trust-game-trial', 1, 20000, 1800, 'Cb1DhSdND5ek', sessionId,
-                    participantId, 2, 8, 2, 34, 12, 14, 0.35, timestamp,
-                    25, 'Female', 'Psychology', '1.0', 'trust_game', timestamp,
-                    50, 6, 'Moderate Trust', timestamp
-                ]
+                ['smoke-test', 0]
             ];
             
             // Format as CSV
@@ -169,12 +145,9 @@
             
             try {
                 const testData = {
-                    type: jsPsychPipe,
-                    action: "save",
-                    experiment_id: 'Cb1DhSdND5ek',
-                    session_id: 'test_session_' + Date.now(),
+                    experimentID: 'Cb1DhSdND5ek',
                     filename: 'test_data_' + Date.now() + '.csv',
-                    data_string: generateComprehensiveTestData()
+                    data: generateComprehensiveTestData()
                 };
                 
                 // Validate the data format
@@ -187,17 +160,15 @@
                             <p><strong>Status:</strong> Local validation successful</p>
                             <p><strong>All required parameters present:</strong></p>
                             <ul>
-                                <li>✅ action: "${testData.action}"</li>
-                                <li>✅ experiment_id: "${testData.experiment_id}"</li>
-                                <li>✅ session_id: "${testData.session_id}"</li>
+                                <li>✅ experimentID: "${testData.experimentID}"</li>
                                 <li>✅ filename: "${testData.filename}"</li>
-                                <li>✅ data_string: ${testData.data_string.split('\n').length} rows</li>
+                                <li>✅ data: ${testData.data.split('\n').length} rows</li>
                             </ul>
                             <p><strong>Data Preview:</strong></p>
-                            <pre>${testData.data_string.split('\n').slice(0, 3).join('\n')}...</pre>
+                            <pre>${testData.data.split('\n').slice(0, 3).join('\n')}...</pre>
                             <p><strong>Next Steps:</strong></p>
                             <ol>
-                                <li>Verify experiment ID "${testData.experiment_id}" is registered at <a href="https://pipe.jspsych.org" target="_blank">pipe.jspsych.org</a></li>
+                                <li>Verify experiment ID "${testData.experimentID}" is registered at <a href="https://pipe.jspsych.org" target="_blank">pipe.jspsych.org</a></li>
                                 <li>Check that your OSF project has DataPipe enabled</li>
                                 <li>Try the live API test if format looks correct</li>
                             </ol>
@@ -233,12 +204,9 @@
             
             try {
                 const testData = {
-                    type: jsPsychPipe,
-                    action: "save",
-                    experiment_id: 'Cb1DhSdND5ek',
-                    session_id: 'test_session_' + Date.now(),
+                    experimentID: 'Cb1DhSdND5ek',
                     filename: 'test_data_' + Date.now() + '.csv',
-                    data_string: generateComprehensiveTestData()
+                    data: generateComprehensiveTestData()
                 };
                 
                 console.log('Testing OSF DataPipe with data:', testData);
@@ -315,7 +283,7 @@
 
         function validateDataPipeFormat(data) {
             const errors = [];
-            const requiredFields = ['action', 'experiment_id', 'session_id', 'filename', 'data_string'];
+            const requiredFields = ['experimentID', 'filename', 'data'];
             
             // Check required fields
             requiredFields.forEach(field => {
@@ -324,27 +292,22 @@
                 }
             });
             
-            // Validate action
-            if (data.action && data.action !== 'save') {
-                errors.push(`Invalid action: ${data.action} (should be "save")`);
+            // Validate experimentID format
+            if (data.experimentID && !/^[a-zA-Z0-9_-]+$/.test(data.experimentID)) {
+                errors.push(`Invalid experimentID format: ${data.experimentID} (should contain only letters, numbers, underscores, and dashes)`);
             }
             
-            // Validate experiment_id format
-            if (data.experiment_id && !/^[a-zA-Z0-9_-]+$/.test(data.experiment_id)) {
-                errors.push(`Invalid experiment_id format: ${data.experiment_id} (should contain only letters, numbers, underscores, and dashes)`);
-            }
-            
-            // Validate data_string is CSV format
-            if (data.data_string) {
-                const lines = data.data_string.split('\n');
+            // Validate data is CSV format
+            if (data.data) {
+                const lines = data.data.split('\n');
                 if (lines.length < 2) {
-                    errors.push('data_string should contain at least header and one data row');
+                    errors.push('data should contain at least header and one data row');
                 }
                 
                 // Check if first line looks like headers
                 const headers = lines[0];
                 if (!headers.includes('trial_type') || !headers.includes('trial_index')) {
-                    errors.push('data_string should include standard jsPsych headers (trial_type, trial_index)');
+                    errors.push('data should include standard jsPsych headers (trial_type, trial_index)');
                 }
             }
             

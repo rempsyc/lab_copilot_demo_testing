@@ -88,6 +88,30 @@
                     // Get all experiment data
                     const allData = jsPsych.data.get().csv();
                     return allData;
+                },
+                on_finish: function(data) {
+                    // Add success/error feedback
+                    console.log('DataPipe submission result:', data);
+                    
+                    // Display result to user
+                    if (data.success !== false) {
+                        document.getElementById('jspsych-experiment').innerHTML += `
+                            <div style="background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; padding: 15px; margin: 20px; border-radius: 5px;">
+                                <h3>✅ DataPipe Submission Success!</h3>
+                                <p>Your data was successfully submitted to OSF DataPipe.</p>
+                                <p><strong>Filename:</strong> minimal_test_${Date.now()}.csv</p>
+                            </div>
+                        `;
+                    } else {
+                        document.getElementById('jspsych-experiment').innerHTML += `
+                            <div style="background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; padding: 15px; margin: 20px; border-radius: 5px;">
+                                <h3>❌ DataPipe Submission Failed</h3>
+                                <p>There was an issue submitting your data to OSF DataPipe.</p>
+                                <p><strong>Error:</strong> ${data.error || 'Unknown error'}</p>
+                                <p>Your data has been saved locally and can be downloaded via the results view.</p>
+                            </div>
+                        `;
+                    }
                 }
             };
 

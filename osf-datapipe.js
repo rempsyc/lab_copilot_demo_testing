@@ -92,7 +92,7 @@ class OSFDataPipe {
 
     /**
      * Format experiment data for OSF DataPipe
-     * DataPipe expects specific format matching jsPsych DataPipe plugin
+     * DataPipe expects specific format: experimentID and data (not experiment_id and data_string)
      */
     formatDataForOSF(data) {
         // Generate unique filename for this session
@@ -102,13 +102,12 @@ class OSFDataPipe {
         // Format data as CSV string (required by DataPipe)
         const csvData = this.convertToCSV(data);
         
-        // Return format matching jsPsych DataPipe plugin as shown in OSF configuration
+        // Return format matching the working PowerShell example
+        // Uses experimentID and data (not experiment_id and data_string)
         return {
-            action: "save",
-            experiment_id: this.configuration.experimentId,
-            session_id: this.configuration.sessionId,
+            experimentID: this.configuration.experimentId,
             filename: filename,
-            data_string: csvData
+            data: csvData
         };
     }
 
