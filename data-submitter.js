@@ -106,15 +106,14 @@ class DataSubmitter {
     }
     
     /**
-     * Create manual submission instructions for OSF DataPipe
+     * Get basic instructions for data submission fallback
      */
-    getOSFManualSubmissionInstructions() {
+    getDataSubmissionInstructions() {
         return [
-            '1. Go to pipe.jspsych.org',
-            '2. Enter your experiment ID: xMeT3pzdPmF9', 
-            '3. Upload the JSON data provided below',
-            '4. Or use your OSF project to store the CSV data',
-            '5. Contact the researcher if you need assistance'
+            'OSF DataPipe submission failed.',
+            'Your data has been saved locally.',
+            'Please download the CSV file using the button provided.',
+            'Contact the researcher if you need assistance with data submission.'
         ];
     }
 

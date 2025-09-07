@@ -96,12 +96,16 @@ class OSFDataPipe {
      */
     formatDataForOSF(data) {
         const formattedTrials = data.trials.map((trial, index) => ({
-            // Core DataPipe fields
+            // Required DataPipe/jsPsych core fields
+            trial_type: 'trust-game-trial',
+            trial_index: index,
+            time_elapsed: (index + 1) * 10000, // Approximate time elapsed
+            rt: trial.reaction_time || null,
+            
+            // Standard DataPipe fields  
             experiment_id: this.configuration.experimentId,
             session_id: this.configuration.sessionId,
             participant_id: data.participant_id,
-            trial_index: index,
-            trial_type: 'trust-game-trial',
             
             // Trust game specific data
             round: trial.round,
@@ -111,10 +115,9 @@ class OSFDataPipe {
             amount_returned: trial.amount_returned,
             final_earnings: trial.final_earnings,
             return_rate: trial.return_rate,
-            reaction_time: trial.reaction_time,
             trial_timestamp: trial.timestamp,
             
-            // Participant info (repeated for each trial for easy analysis)
+            // Participant demographics
             participant_age: data.demographics.age,
             participant_gender: data.demographics.gender,
             participant_field: data.demographics.field,
@@ -124,7 +127,7 @@ class OSFDataPipe {
             experiment_name: data.experiment,
             participant_timestamp: data.timestamp,
             
-            // Summary data (repeated for convenience)
+            // Summary statistics (for analysis convenience)
             total_earnings: data.summary.total_earnings,
             average_amount_sent: data.summary.average_amount_sent,
             trust_pattern: data.summary.trust_pattern,
@@ -139,31 +142,28 @@ class OSFDataPipe {
     }
 
     /**
-     * Create a backup submission to OSF via alternative method
-     * This could be used as a fallback if the main DataPipe fails
+     * Create a backup submission option when DataPipe fails
+     * Returns clean instructions focused on CSV download
      */
     async createBackupSubmission(data) {
-        // For now, this returns the data formatted for manual submission
-        // Could be extended to use OSF API directly if needed
         return {
             success: false,
-            method: 'manual_backup',
-            message: 'Please save this data manually to your OSF project',
+            method: 'local_fallback',
+            message: 'OSF DataPipe unavailable. Data saved locally for download.',
             data: this.formatDataForOSF(data),
-            instructions: this.getManualSubmissionInstructions()
+            instructions: this.getDataSubmissionInstructions()
         };
     }
 
     /**
-     * Get instructions for manual data submission to OSF
+     * Get clean instructions for data submission fallback
      */
-    getManualSubmissionInstructions() {
+    getDataSubmissionInstructions() {
         return [
-            '1. Go to your OSF project page',
-            '2. Navigate to Files section', 
-            '3. Create a new file or upload the data',
-            '4. Use filename: trust_game_data_[participant_id]_[timestamp].json',
-            '5. Paste the formatted data from above'
+            'OSF DataPipe submission failed.',
+            'Your data has been saved locally.',
+            'Please download the CSV file using the button provided.',
+            'Contact the researcher if you need assistance.'
         ];
     }
 
