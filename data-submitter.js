@@ -23,8 +23,8 @@ class DataSubmitter {
     configureOSFDataPipe() {
         try {
             this.osfDataPipe.configure({
-                experimentId: 'trust_game_ccc_2024', // Unique identifier for this study
-                studyId: 'center_conflict_cooperation', // Research group identifier
+                experimentId: 'xMeT3pzdPmF9', // DataPipe experiment ID from OSF setup
+                studyId: null, // Will be auto-generated per session
                 sessionId: null // Will be auto-generated per participant
             });
         } catch (error) {
@@ -111,7 +111,7 @@ class DataSubmitter {
     getOSFManualSubmissionInstructions() {
         return [
             '1. Go to pipe.jspsych.org',
-            '2. Enter your experiment ID: trust_game_ccc_2024', 
+            '2. Enter your experiment ID: xMeT3pzdPmF9', 
             '3. Upload the JSON data provided below',
             '4. Or use your OSF project to store the CSV data',
             '5. Contact the researcher if you need assistance'

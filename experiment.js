@@ -455,10 +455,10 @@ class TrustGameExperiment {
     copyOSFData() {
         // Format data for OSF DataPipe manual submission
         const osfData = {
-            experimentID: 'trust_game_ccc_2024',
+            experimentID: 'xMeT3pzdPmF9',
             sessionID: `session_${this.participantId}`,
             data: this.data.trials.map((trial, index) => ({
-                experiment_id: 'trust_game_ccc_2024',
+                experiment_id: 'xMeT3pzdPmF9',
                 session_id: `session_${this.participantId}`,
                 participant_id: this.data.participant_id,
                 trial_index: index,
