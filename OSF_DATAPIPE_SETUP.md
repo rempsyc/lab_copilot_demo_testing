@@ -25,8 +25,9 @@ OSF DataPipe is a service provided by the Open Science Framework that allows res
 ## Current Configuration
 
 The experiment is currently configured with:
-- **Experiment ID**: `xMeT3pzdPmF9`
-- **Study ID**: `null` (auto-generated per session)
+- **Experiment ID**: `Cb1DhSdND5ek`
+- **OSF Project**: https://osf.io/u4ngh
+- **OSF Data Component**: https://osf.io/avu9k
 - **DataPipe URL**: `https://pipe.jspsych.org/api/data/`
 
 ## Data Format
@@ -89,7 +90,7 @@ If automatic submission fails, participants see instructions for manual submissi
 
 ### Option 1: OSF DataPipe Manual Upload
 1. Go to [pipe.jspsych.org](https://pipe.jspsych.org)
-2. Use experiment ID: `xMeT3pzdPmF9`
+2. Use experiment ID: `Cb1DhSdND5ek`
 3. Upload the formatted JSON data
 
 ### Option 2: GitHub Repository Submission

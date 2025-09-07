@@ -20,12 +20,12 @@
     <h1>OSF DataPipe Configuration Test</h1>
     
     <div class="warning">
-        <strong>Purpose:</strong> This test helps verify if the OSF DataPipe endpoint is properly configured for experiment ID <span class="experiment-id">xMeT3pzdPmF9</span>.
+        <strong>Purpose:</strong> This test helps verify if the OSF DataPipe endpoint is properly configured for experiment ID <span class="experiment-id">Cb1DhSdND5ek</span>.
     </div>
 
     <h2>Current Configuration</h2>
     <ul>
-        <li><strong>Experiment ID:</strong> <span class="experiment-id">xMeT3pzdPmF9</span></li>
+        <li><strong>Experiment ID:</strong> <span class="experiment-id">Cb1DhSdND5ek</span></li>
         <li><strong>DataPipe URL:</strong> <span class="experiment-id">https://pipe.jspsych.org/api/data/</span></li>
         <li><strong>Expected Result:</strong> Success (200) or detailed error message</li>
     </ul>
@@ -56,7 +56,7 @@
         <p><strong>If the automated test fails, try these steps manually:</strong></p>
         <ol>
             <li>Go to <a href="https://pipe.jspsych.org" target="_blank">pipe.jspsych.org</a></li>
-            <li>Check if experiment ID <span class="experiment-id">xMeT3pzdPmF9</span> is listed</li>
+            <li>Check if experiment ID <span class="experiment-id">Cb1DhSdND5ek</span> is listed</li>
             <li>Verify that the experiment is active and properly configured</li>
             <li>Test manual data submission with the sample data below</li>
         </ol>
@@ -69,7 +69,7 @@
     <pre id="jspsych-config">const save_data = {
   type: jsPsychPipe,
   action: "save",
-  experiment_id: "xMeT3pzdPmF9",
+  experiment_id: "Cb1DhSdND5ek",
   filename: "trust_game_" + Date.now() + ".csv",
   data_string: () => jsPsych.data.get().csv()
 };</pre>
@@ -80,10 +80,10 @@
     </div>
     <pre id="sample-data">{
   "action": "save",
-  "experiment_id": "xMeT3pzdPmF9",
+  "experiment_id": "Cb1DhSdND5ek",
   "session_id": "test_session_manual",
   "filename": "test_data_manual.csv",
-  "data_string": "trial_type,trial_index,time_elapsed,rt,experiment_id,session_id,participant_id,round,amount_sent,amount_kept,partner_received,amount_returned,final_earnings,return_rate,trial_timestamp,participant_age,participant_gender,participant_field,experiment_version,experiment_name,participant_timestamp,total_earnings,average_amount_sent,trust_pattern,completion_time\n\"trust-game-trial\",0,10000,2500,\"xMeT3pzdPmF9\",\"test_session_manual\",\"test_participant\",1,5,5,25,7,12,0.28,\"2024-01-01T00:00:00.000Z\",25,\"Female\",\"Psychology\",\"1.0\",\"trust_game\",\"2024-01-01T00:00:00.000Z\",50,6,\"Moderate Trust\",\"2024-01-01T00:00:00.000Z\""
+  "data_string": "trial_type,trial_index,time_elapsed,rt,experiment_id,session_id,participant_id,round,amount_sent,amount_kept,partner_received,amount_returned,final_earnings,return_rate,trial_timestamp,participant_age,participant_gender,participant_field,experiment_version,experiment_name,participant_timestamp,total_earnings,average_amount_sent,trust_pattern,completion_time\n\"trust-game-trial\",0,10000,2500,\"Cb1DhSdND5ek\",\"test_session_manual\",\"test_participant\",1,5,5,25,7,12,0.28,\"2024-01-01T00:00:00.000Z\",25,\"Female\",\"Psychology\",\"1.0\",\"trust_game\",\"2024-01-01T00:00:00.000Z\",50,6,\"Moderate Trust\",\"2024-01-01T00:00:00.000Z\""
 }</pre>
 
     <h3>Command Line Testing (curl)</h3>
@@ -93,10 +93,10 @@
 -H "Content-Type: application/json" \
 -d '{
   "action": "save",
-  "experiment_id": "xMeT3pzdPmF9",
+  "experiment_id": "Cb1DhSdND5ek",
   "session_id": "test_session_curl",
   "filename": "test_data_curl.csv",
-  "data_string": "trial_type,trial_index,time_elapsed,rt,experiment_id,session_id,participant_id,round,amount_sent,amount_kept,partner_received,amount_returned,final_earnings,return_rate,trial_timestamp,participant_age,participant_gender,participant_field,experiment_version,experiment_name,participant_timestamp,total_earnings,average_amount_sent,trust_pattern,completion_time\n\"trust-game-trial\",0,10000,2500,\"xMeT3pzdPmF9\",\"test_session_curl\",\"test_participant\",1,5,5,25,7,12,0.28,\"2024-01-01T00:00:00.000Z\",25,\"Female\",\"Psychology\",\"1.0\",\"trust_game\",\"2024-01-01T00:00:00.000Z\",50,6,\"Moderate Trust\",\"2024-01-01T00:00:00.000Z\""
+  "data_string": "trial_type,trial_index,time_elapsed,rt,experiment_id,session_id,participant_id,round,amount_sent,amount_kept,partner_received,amount_returned,final_earnings,return_rate,trial_timestamp,participant_age,participant_gender,participant_field,experiment_version,experiment_name,participant_timestamp,total_earnings,average_amount_sent,trust_pattern,completion_time\n\"trust-game-trial\",0,10000,2500,\"Cb1DhSdND5ek\",\"test_session_curl\",\"test_participant\",1,5,5,25,7,12,0.28,\"2024-01-01T00:00:00.000Z\",25,\"Female\",\"Psychology\",\"1.0\",\"trust_game\",\"2024-01-01T00:00:00.000Z\",50,6,\"Moderate Trust\",\"2024-01-01T00:00:00.000Z\""
 }'</pre>
         <p><strong>Expected Results:</strong></p>
         <ul>
@@ -141,13 +141,13 @@
             
             const rows = [
                 [
-                    'trust-game-trial', 0, 10000, 2500, 'xMeT3pzdPmF9', sessionId,
+                    'trust-game-trial', 0, 10000, 2500, 'Cb1DhSdND5ek', sessionId,
                     participantId, 1, 5, 5, 25, 7, 12, 0.28, timestamp,
                     25, 'Female', 'Psychology', '1.0', 'trust_game', timestamp,
                     50, 6, 'Moderate Trust', timestamp
                 ],
                 [
-                    'trust-game-trial', 1, 20000, 1800, 'xMeT3pzdPmF9', sessionId,
+                    'trust-game-trial', 1, 20000, 1800, 'Cb1DhSdND5ek', sessionId,
                     participantId, 2, 8, 2, 34, 12, 14, 0.35, timestamp,
                     25, 'Female', 'Psychology', '1.0', 'trust_game', timestamp,
                     50, 6, 'Moderate Trust', timestamp
@@ -171,7 +171,7 @@
                 const testData = {
                     type: jsPsychPipe,
                     action: "save",
-                    experiment_id: 'xMeT3pzdPmF9',
+                    experiment_id: 'Cb1DhSdND5ek',
                     session_id: 'test_session_' + Date.now(),
                     filename: 'test_data_' + Date.now() + '.csv',
                     data_string: generateComprehensiveTestData()
@@ -235,7 +235,7 @@
                 const testData = {
                     type: jsPsychPipe,
                     action: "save",
-                    experiment_id: 'xMeT3pzdPmF9',
+                    experiment_id: 'Cb1DhSdND5ek',
                     session_id: 'test_session_' + Date.now(),
                     filename: 'test_data_' + Date.now() + '.csv',
                     data_string: generateComprehensiveTestData()
@@ -279,7 +279,7 @@
                             <h3>❌ DataPipe API Error</h3>
                             <p><strong>Status:</strong> ${response.status}</p>
                             <p><strong>Error:</strong> ${errorDetails}</p>
-                            <p><strong>Most Likely Cause:</strong> Experiment ID "xMeT3pzdPmF9" is not properly registered in DataPipe</p>
+                            <p><strong>Most Likely Cause:</strong> Experiment ID "Cb1DhSdND5ek" is not properly registered in DataPipe</p>
                             <p><strong>Troubleshooting Steps:</strong></p>
                             <ol>
                                 <li>Go to <a href="https://pipe.jspsych.org" target="_blank">pipe.jspsych.org</a> and verify the experiment is registered</li>

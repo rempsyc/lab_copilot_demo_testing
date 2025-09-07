@@ -23,7 +23,7 @@ class DataSubmitter {
     configureOSFDataPipe() {
         try {
             this.osfDataPipe.configure({
-                experimentId: 'xMeT3pzdPmF9', // DataPipe experiment ID from OSF setup
+                experimentId: 'Cb1DhSdND5ek', // DataPipe experiment ID from OSF setup
                 studyId: null, // Will be auto-generated per session
                 sessionId: null // Will be auto-generated per participant
             });
