@@ -49,22 +49,11 @@
 
     <h3>Sample Test Data</h3>
     <pre id="sample-data">{
-  "experimentID": "xMeT3pzdPmF9",
-  "sessionID": "test_session_manual",
-  "data": [
-    {
-      "trial_type": "trust-game-trial",
-      "trial_index": 0,
-      "time_elapsed": 10000,
-      "rt": 2500,
-      "round": 1,
-      "amount_sent": 5,
-      "amount_kept": 5,
-      "partner_received": 25,
-      "amount_returned": 7,
-      "final_earnings": 12
-    }
-  ]
+  "action": "save",
+  "experiment_id": "xMeT3pzdPmF9",
+  "session_id": "test_session_manual",
+  "filename": "test_data_manual.csv",
+  "data_string": "trial_type,trial_index,time_elapsed,rt,round,amount_sent,amount_kept\n\"trust-game-trial\",0,10000,2500,1,5,5"
 }</pre>
 
     <script>
@@ -75,22 +64,11 @@
             resultsDiv.innerHTML = '<div class="warning">Testing OSF DataPipe submission...</div>';
             
             const testData = {
-                experimentID: 'xMeT3pzdPmF9',
-                sessionID: 'test_session_' + Date.now(),
-                data: [
-                    {
-                        trial_type: 'trust-game-trial',
-                        trial_index: 0,
-                        time_elapsed: 10000,
-                        rt: 2500,
-                        round: 1,
-                        amount_sent: 5,
-                        amount_kept: 5,
-                        partner_received: 25,
-                        amount_returned: 7,
-                        final_earnings: 12
-                    }
-                ]
+                action: "save",
+                experiment_id: 'xMeT3pzdPmF9',
+                session_id: 'test_session_' + Date.now(),
+                filename: 'test_data_' + Date.now() + '.csv',
+                data_string: 'trial_type,trial_index,time_elapsed,rt,round,amount_sent,amount_kept,final_earnings\n"trust-game-trial",0,10000,2500,1,5,5,12'
             };
             
             try {
