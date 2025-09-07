@@ -120,6 +120,9 @@
     </div>
 
     <script>
+        // Define jsPsychPipe for testing purposes (normally this would be imported)
+        const jsPsychPipe = "jsPsychPipe";
+        
         function generateComprehensiveTestData() {
             // Generate test data matching the exact format from the experiment
             const headers = [
@@ -166,6 +169,7 @@
             
             try {
                 const testData = {
+                    type: jsPsychPipe,
                     action: "save",
                     experiment_id: 'xMeT3pzdPmF9',
                     session_id: 'test_session_' + Date.now(),
@@ -229,6 +233,7 @@
             
             try {
                 const testData = {
+                    type: jsPsychPipe,
                     action: "save",
                     experiment_id: 'xMeT3pzdPmF9',
                     session_id: 'test_session_' + Date.now(),
